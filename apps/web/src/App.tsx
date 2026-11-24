@@ -20,6 +20,11 @@ import TeacherAssessmentReviewPage from '@/pages/teacher/TeacherAssessmentReview
 import TeacherSyncMonitoringPage from '@/pages/teacher/TeacherSyncMonitoringPage'
 import TeacherReportsPage from '@/pages/teacher/TeacherReportsPage'
 import SubmissionDetailPage from '@/pages/teacher/SubmissionDetailPage'
+import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
+import AdminUsersPage from '@/pages/admin/AdminUsersPage'
+import AdminSyncMonitorPage from '@/pages/admin/AdminSyncMonitorPage'
+import AdminAuditLogPage from '@/pages/admin/AdminAuditLogPage'
+import AdminConflictPoliciesPage from '@/pages/admin/AdminConflictPoliciesPage'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useAuthStore } from '@/store/authStore'
 
@@ -39,8 +44,16 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user } = useAuthStore()
+  if (!user) return <Navigate to="/login" replace />
+  if (user.role !== 'admin') return <Navigate to="/dashboard" replace />
+  return <>{children}</>
+}
+
 function RoleBasedDashboard() {
   const { user } = useAuthStore()
+  if (user?.role === 'admin')   return <Navigate to="/admin" replace />
   if (user?.role === 'teacher') return <TeacherDashboardPage />
   return <DashboardPage />
 }
@@ -90,15 +103,22 @@ export default function App() {
             <Route path="/sync" element={<RoleBasedSync />} />
             <Route path="/settings" element={<SettingsPage />} />
 
-            {/* Teacher Portal Explicit Routes */}
-            <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
-            <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
-            <Route path="/teacher/progress" element={<TeacherProgressPage />} />
+            {/* Teacher Portal */}
+            <Route path="/teacher/dashboard"   element={<TeacherDashboardPage />} />
+            <Route path="/teacher/courses"     element={<TeacherCoursesPage />} />
+            <Route path="/teacher/progress"    element={<TeacherProgressPage />} />
             <Route path="/teacher/assessments" element={<TeacherAssessmentReviewPage />} />
             <Route path="/teacher/submissions" element={<TeacherAssessmentReviewPage />} />
             <Route path="/teacher/submissions/:submissionId" element={<SubmissionDetailPage />} />
-            <Route path="/teacher/sync" element={<TeacherSyncMonitoringPage />} />
-            <Route path="/teacher/reports" element={<TeacherReportsPage />} />
+            <Route path="/teacher/sync"        element={<TeacherSyncMonitoringPage />} />
+            <Route path="/teacher/reports"     element={<TeacherReportsPage />} />
+
+            {/* Admin Portal */}
+            <Route path="/admin"                   element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />
+            <Route path="/admin/users"             element={<AdminRoute><AdminUsersPage /></AdminRoute>} />
+            <Route path="/admin/sync-monitor"      element={<AdminRoute><AdminSyncMonitorPage /></AdminRoute>} />
+            <Route path="/admin/audit-logs"        element={<AdminRoute><AdminAuditLogPage /></AdminRoute>} />
+            <Route path="/admin/conflict-policies" element={<AdminRoute><AdminConflictPoliciesPage /></AdminRoute>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />

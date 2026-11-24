@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { Eye, EyeOff, Mail, Lock, User } from 'lucide-react'
 
-type Role = 'student' | 'teacher'
+type Role = 'student' | 'teacher' | 'admin'
 
 interface LoginPageProps {
   initialSignup?: boolean
@@ -26,7 +26,10 @@ export function LoginPage({ initialSignup = false }: LoginPageProps) {
     setRole(selectedRole)
     setError(null)
     if (!isSignup) {
-      if (selectedRole === 'teacher') {
+      if (selectedRole === 'admin') {
+        setEmail('admin@school.com')
+        setPassword('password123')
+      } else if (selectedRole === 'teacher') {
         setEmail('teacher@school.com')
         setPassword('password123')
       } else {
@@ -66,7 +69,11 @@ export function LoginPage({ initialSignup = false }: LoginPageProps) {
 
       const data = await res.json()
       setAuth(data.user, data.accessToken)
-      navigate(data.user.role === 'teacher' ? '/teacher/dashboard' : '/dashboard')
+      navigate(
+        data.user.role === 'admin' ? '/admin' :
+        data.user.role === 'teacher' ? '/teacher/dashboard' :
+        '/dashboard'
+      )
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Authentication failed')
     } finally {
@@ -82,7 +89,7 @@ export function LoginPage({ initialSignup = false }: LoginPageProps) {
 
       {/* Role tabs */}
       <div className="flex bg-[#F4F8FC] border border-[#D7E5F0] rounded-xl p-1 mb-5">
-        {(['student', 'teacher'] as Role[]).map((r) => (
+        {(['student', 'teacher', 'admin'] as Role[]).map((r) => (
           <button
             key={r}
             type="button"

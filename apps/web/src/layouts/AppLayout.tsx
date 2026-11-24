@@ -11,7 +11,8 @@ import {
   LayoutDashboard, BookOpen, Download, TrendingUp,
   RefreshCw, Settings, Bell, Search,
   ClipboardList, CheckSquare, Users, BarChart3,
-  Sun, Moon, ChevronDown, WifiOff, GraduationCap, Compass
+  Sun, Moon, ChevronDown, WifiOff, GraduationCap, Compass,
+  Shield, UserCog, FileText, AlertTriangle
 } from 'lucide-react'
 
 interface NavItem {
@@ -42,6 +43,15 @@ const TEACHER_NAV: NavItem[] = [
   { to: '/settings',            icon: Settings,        label: 'Settings' },
 ]
 
+const ADMIN_NAV: NavItem[] = [
+  { to: '/admin',                  icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/admin/users',            icon: UserCog,         label: 'User Management' },
+  { to: '/admin/sync-monitor',     icon: AlertTriangle,   label: 'Sync Monitor' },
+  { to: '/admin/audit-logs',       icon: FileText,        label: 'Audit Logs' },
+  { to: '/admin/conflict-policies',icon: Shield,          label: 'Conflict Policies' },
+  { to: '/settings',               icon: Settings,        label: 'Settings' },
+]
+
 export function AppLayout() {
   const { user, clearAuth } = useAuthStore()
   const { theme, setTheme } = useUIStore()
@@ -65,7 +75,8 @@ export function AppLayout() {
   }
 
   const isTeacher = user?.role === 'teacher'
-  const NAV_ITEMS = isTeacher ? TEACHER_NAV : STUDENT_NAV
+  const isAdmin   = user?.role === 'admin'
+  const NAV_ITEMS = isAdmin ? ADMIN_NAV : isTeacher ? TEACHER_NAV : STUDENT_NAV
 
   return (
     <div className="flex h-dvh overflow-hidden bg-[#F0F5FA]">
@@ -130,13 +141,13 @@ export function AppLayout() {
             <Compass size={18} strokeWidth={2.2} />
           </div>
           <p className="text-slate-900 dark:text-slate-100 font-bold text-xs mb-3">
-            {isTeacher ? 'Class Sync Status' : 'Keep Learning Anywhere!'}
+            {isAdmin ? 'System Control' : isTeacher ? 'Class Sync Status' : 'Keep Learning Anywhere!'}
           </p>
           <button
-            onClick={() => navigate(isTeacher ? '/teacher/sync' : '/downloads')}
+            onClick={() => navigate(isAdmin ? '/admin/sync-monitor' : isTeacher ? '/teacher/sync' : '/downloads')}
             className="w-full py-2 px-3 rounded-lg bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-semibold shadow-xs transition-all"
           >
-            {isTeacher ? 'Sync Monitoring' : 'Go Offline'}
+            {isAdmin ? 'Sync Monitor' : isTeacher ? 'Sync Monitoring' : 'Go Offline'}
           </button>
         </div>
 

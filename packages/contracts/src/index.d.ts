@@ -1,13 +1,13 @@
 export interface LoginDto {
     email: string;
     password: string;
-    role: 'student' | 'teacher';
+    role: 'student' | 'teacher' | 'admin';
 }
 export interface SignupDto {
     name: string;
     email: string;
     password: string;
-    role: 'student' | 'teacher';
+    role: 'student' | 'teacher' | 'admin';
 }
 export interface AuthResponseDto {
     accessToken: string;
@@ -17,8 +17,43 @@ export interface UserDto {
     id: string;
     email: string;
     name: string;
-    role: 'student' | 'teacher';
+    role: 'student' | 'teacher' | 'admin';
     avatarUrl?: string;
+}
+export interface AdminUserListItemDto {
+    id: string;
+    email: string;
+    name: string;
+    role: 'student' | 'teacher' | 'admin';
+    createdAt: string;
+}
+export interface AdminSyncFailureDto {
+    id: string;
+    studentId: string;
+    studentName: string;
+    routeScope: string;
+    idempotencyKey: string;
+    payloadHash: string;
+    createdAt: string;
+    expiresAt: string;
+}
+export interface AdminAuditLogEntryDto {
+    id: string;
+    actorId: string | null;
+    actorName?: string;
+    eventType: string;
+    correlationId: string | null;
+    clientAttemptId: string | null;
+    idempotencyKey: string | null;
+    metadata: unknown;
+    createdAt: string;
+}
+export interface ConflictPolicyDto {
+    id: string;
+    name: string;
+    strategy: string;
+    description: string;
+    status: 'active';
 }
 export interface CourseDto {
     id: string;

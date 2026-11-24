@@ -1,0 +1,25 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useState, useEffect } from 'react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
+import api from '../../services/api';
+const MOCK = [
+    { id: '1', studentId: 's1', studentName: 'Aarav Sharma', routeScope: 'POST:/submissions', idempotencyKey: 'ik-001', payloadHash: 'a1b2c3d4', createdAt: new Date(Date.now() - 3600000).toISOString(), expiresAt: new Date(Date.now() + 86400000 * 29).toISOString() },
+    { id: '2', studentId: 's2', studentName: 'Diya Patel', routeScope: 'POST:/submissions', idempotencyKey: 'ik-002', payloadHash: 'e5f6g7h8', createdAt: new Date(Date.now() - 7200000).toISOString(), expiresAt: new Date(Date.now() + 86400000 * 28).toISOString() },
+    { id: '3', studentId: 's3', studentName: 'Priya Singh', routeScope: 'POST:/submissions', idempotencyKey: 'ik-003', payloadHash: 'i9j0k1l2', createdAt: new Date(Date.now() - 1800000).toISOString(), expiresAt: new Date(Date.now() + 86400000 * 30).toISOString() },
+];
+export default function AdminSyncMonitorPage() {
+    const [records, setRecords] = useState(MOCK);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const load = () => {
+        api.get('/admin/sync-monitor')
+            .then((r) => { if (r.data?.length > 0)
+            setRecords(r.data); })
+            .catch(() => { })
+            .finally(() => { setLoading(false); setRefreshing(false); });
+    };
+    useEffect(() => { load(); }, []);
+    const refresh = () => { setRefreshing(true); load(); };
+    return (_jsxs("div", { className: "p-6 space-y-6", children: [_jsxs("div", { className: "flex items-center justify-between", children: [_jsx("div", { children: _jsx("h1", { className: "text-2xl font-bold text-gray-900", children: "Sync Monitor" }) }), _jsxs("button", { onClick: refresh, disabled: refreshing, className: "flex items-center gap-2 px-4 py-2 bg-[#1B7FC9] text-white rounded-lg text-sm font-medium hover:bg-[#1668a8] transition-colors disabled:opacity-60", children: [_jsx(RefreshCw, { className: `w-4 h-4 ${refreshing ? 'animate-spin' : ''}` }), "Refresh"] })] }), _jsxs("div", { className: "grid grid-cols-3 gap-4", children: [_jsxs("div", { className: "bg-white rounded-xl border border-[#C5DCF0] p-5", children: [_jsx("div", { className: "text-2xl font-bold text-gray-900", children: records.length }), _jsx("div", { className: "text-sm text-gray-500 mt-1", children: "Total Records" })] }), _jsxs("div", { className: "bg-white rounded-xl border border-[#C5DCF0] p-5", children: [_jsx("div", { className: "text-2xl font-bold text-green-600", children: records.length }), _jsx("div", { className: "text-sm text-gray-500 mt-1", children: "Active (within 30d)" })] }), _jsxs("div", { className: "bg-white rounded-xl border border-[#C5DCF0] p-5", children: [_jsx("div", { className: "text-2xl font-bold text-amber-600", children: "0" }), _jsx("div", { className: "text-sm text-gray-500 mt-1", children: "Conflicts Detected" })] })] }), loading ? (_jsx("div", { className: "bg-white rounded-xl border border-[#C5DCF0] p-8 animate-pulse h-64" })) : (_jsxs("div", { className: "bg-white rounded-xl border border-[#C5DCF0] overflow-hidden", children: [_jsxs("table", { className: "w-full text-sm", children: [_jsx("thead", { className: "bg-[#F0F5FA] border-b border-[#C5DCF0]", children: _jsxs("tr", { children: [_jsx("th", { className: "text-left px-4 py-3 font-medium text-gray-600", children: "Student" }), _jsx("th", { className: "text-left px-4 py-3 font-medium text-gray-600", children: "Route" }), _jsx("th", { className: "text-left px-4 py-3 font-medium text-gray-600", children: "Idempotency Key" }), _jsx("th", { className: "text-left px-4 py-3 font-medium text-gray-600", children: "Payload Hash" }), _jsx("th", { className: "text-left px-4 py-3 font-medium text-gray-600", children: "Created" }), _jsx("th", { className: "text-left px-4 py-3 font-medium text-gray-600", children: "Expires" })] }) }), _jsx("tbody", { className: "divide-y divide-gray-50", children: records.map(r => (_jsxs("tr", { className: "hover:bg-[#F8FBFF]", children: [_jsx("td", { className: "px-4 py-3 font-medium text-gray-900", children: r.studentName }), _jsx("td", { className: "px-4 py-3", children: _jsx("code", { className: "text-xs bg-gray-100 px-1.5 py-0.5 rounded", children: r.routeScope }) }), _jsx("td", { className: "px-4 py-3 font-mono text-xs text-gray-600", children: r.idempotencyKey }), _jsxs("td", { className: "px-4 py-3 font-mono text-xs text-gray-500", children: [r.payloadHash.slice(0, 8), "\u2026"] }), _jsx("td", { className: "px-4 py-3 text-gray-500", children: new Date(r.createdAt).toLocaleString() }), _jsx("td", { className: "px-4 py-3 text-gray-500", children: new Date(r.expiresAt).toLocaleDateString() })] }, r.id))) })] }), records.length === 0 && (_jsxs("div", { className: "flex flex-col items-center py-12 text-gray-400 gap-2", children: [_jsx(AlertCircle, { className: "w-8 h-8" }), _jsx("span", { className: "text-sm", children: "No sync records found" })] }))] }))] }));
+}
+//# sourceMappingURL=AdminSyncMonitorPage.js.map

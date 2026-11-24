@@ -25,8 +25,13 @@ async function main() {
     update: {},
     create: { email: 'teacher@school.com',  name: 'Rohan Mehta',   passwordHash, role: 'teacher' },
   })
+  const admin = await prisma.user.upsert({
+    where:  { email: 'admin@school.com' },
+    update: {},
+    create: { email: 'admin@school.com',    name: 'Admin User',    passwordHash, role: 'admin' },
+  })
 
-  console.log(`✅ Users: ${student1.name}, ${student2.name}, ${teacher.name}`)
+  console.log(`✅ Users: ${student1.name}, ${student2.name}, ${teacher.name}, ${admin.name}`)
 
   // ── Courses, Lessons & Quizzes from COURSE_CATALOG ─────────────────────────
   for (const c of COURSE_CATALOG) {

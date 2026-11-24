@@ -16,7 +16,7 @@ export class SignupDto {
   @MinLength(6)
   password!: string
 
-  @ApiProperty({ enum: ['student', 'teacher'] })
-  @IsEnum(['student', 'teacher'])
-  role!: 'student' | 'teacher'
+  @ApiProperty({ enum: ['student', 'teacher', 'admin'] })
+  @IsEnum(['student', 'teacher', 'admin'])
+  role!: 'student' | 'teacher' | 'admin'
 }
