@@ -52,12 +52,13 @@ npm run dev
 
 ---
 
-## Idempotent Sync Demo
-To demonstrate exactly-once submission guarantees:
+## Idempotent Sync & Conflict Resolution Demo
+To demonstrate exactly-once submission guarantees and conflict resolution:
 1. Submit quiz (student goes online)
 2. While sync is in progress, kill the browser tab (simulates dropped response)
 3. Reopen the app — submission shows as "Syncing..."
 4. After retry, the original receipt is replayed — **no duplicate** in DB
+5. Full conflict rules documented in [docs/CONFLICT_RESOLUTION.md](docs/CONFLICT_RESOLUTION.md) (Monotonic CRDT Progress, Idempotent First-Commit-Wins, Monotonic Answer Revision Sequence).
 
 ---
 

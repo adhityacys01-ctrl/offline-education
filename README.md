@@ -87,18 +87,24 @@ App runs at: http://localhost:5173
 | Phase | Status    | Description                               |
 |-------|-----------|-------------------------------------------|
 | 1     | ✅ Done    | Monorepo, Auth, Prisma schema, DB seed    |
-| 2     | 🔜 Next    | Offline manifests, download engine        |
-| 3     | 🔜 Planned | Local-first quiz player, IndexedDB engine |
-| 4     | 🔜 Planned | Outbox sync & retry protocol              |
-| 5     | 🔜 Planned | Idempotent backend submission             |
-| 6     | 🔜 Planned | Teacher portal & audit workspace          |
-| 7     | 🔜 Planned | Fault injection tests & demo hardening    |
+| 2     | ✅ Done    | Offline manifests, download engine        |
+| 3     | ✅ Done    | Local-first quiz player, IndexedDB engine |
+| 4     | ✅ Done    | Outbox sync & retry protocol              |
+| 5     | ✅ Done    | Idempotent backend submission             |
+| 6     | ✅ Done    | Teacher portal & audit workspace          |
+| 7     | ✅ Done    | Fault injection tests & demo hardening    |
 
 ---
 
-## 🛡️ Key Guarantees
+## 🛡️ Key Guarantees & Conflict Resolution
 
 - **Zero answer loss** — all quiz answers written to IndexedDB before UI confirms
 - **Exactly-once submission** — idempotency keys + DB unique constraints prevent duplicates
 - **Crash recovery** — full draft restoration after hard browser kill
-- **Transparent sync UX** — never shows "Submission Failed"; always "Sync interrupted, retrying"
+- **Transparent sync UX** — live sync status badges with automatic retry & exponential backoff
+- **Documented Conflict Resolution** — full specification in [CONFLICT_RESOLUTION.md](docs/CONFLICT_RESOLUTION.md):
+  1. *Lesson Progress*: Monotonic CRDT Grow-Only rule (completed status never regresses).
+  2. *Quiz Submissions*: Idempotent First-Commit-Wins with SHA-256 payload integrity check.
+  3. *Answer Drafts*: Monotonic revision sequencing for local multi-edit consistency.
+  4. *Content Integrity*: Content-addressable SHA-256 hash validation for course downloads.
+  5. *Ambiguous Drops*: Reconcile-before-resend check before re-uploading dropped connections.

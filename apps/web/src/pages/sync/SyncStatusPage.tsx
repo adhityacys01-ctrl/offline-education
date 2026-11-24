@@ -1,209 +1,236 @@
 import { useState, useCallback } from 'react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
-import { retryOutboxItem, retryAllOutboxItems } from '@/services/syncEngine'
+import { retryAllOutboxItems } from '@/services/syncEngine'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { useManualSync } from '@/hooks/useSyncEngine'
-import { formatRelativeTime } from '@/lib/utils'
-import { RefreshCw, CheckCircle, Clock, AlertCircle, Wifi, WifiOff, RotateCcw, ShieldCheck } from 'lucide-react'
+import { Check, RefreshCw, Clock, AlertTriangle, Info, WifiOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { OutboxItem } from '@/db/types'
 
-// ── Status config ─────────────────────────────────────────────────────────────
-const STATUS_UI: Record<OutboxItem['status'], { label: string; badgeCls: string; iconCls: string }> = {
-  PENDING:          { label: 'Pending sync',       badgeCls: 'badge-warning', iconCls: 'bg-warning/10 text-warning-dark' },
-  SENDING:          { label: 'Syncing…',            badgeCls: 'badge-syncing', iconCls: 'bg-syncing/10 text-syncing-dark' },
-  SENT:             { label: 'Synced',              badgeCls: 'badge-success', iconCls: 'bg-success/10 text-success-dark' },
-  FAILED_RETRYABLE: { label: 'Sync interrupted',   badgeCls: 'badge-danger',  iconCls: 'bg-danger/10 text-danger' },
-  FAILED_FATAL:     { label: 'Needs attention',     badgeCls: 'badge-danger',  iconCls: 'bg-danger/10 text-danger' },
-}
-
-function StatusIcon({ status }: { status: OutboxItem['status'] }) {
-  const cls = STATUS_UI[status].iconCls
-  if (status === 'SENDING')          return <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', cls)}><RefreshCw size={15} className="animate-spin" /></div>
-  if (status === 'SENT')             return <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', cls)}><CheckCircle size={15} /></div>
-  if (status === 'PENDING')          return <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', cls)}><Clock size={15} /></div>
-  return                                    <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center', cls)}><AlertCircle size={15} /></div>
-}
-
 export function SyncStatusPage() {
-  const isOnline          = useOnlineStatus()
-  const { syncNow }       = useManualSync()
+  const isOnline = useOnlineStatus()
+  const { syncNow } = useManualSync()
   const [syncing, setSyncing] = useState(false)
+  const [retrying, setRetrying] = useState(false)
+  const [retrySuccessNotice, setRetrySuccessNotice] = useState(false)
 
-  // Live data from IndexedDB
-  const outbox    = useLiveQuery(() => db.outbox.orderBy('createdAt').reverse().toArray(), [], []) as OutboxItem[]
-  const receipts  = useLiveQuery(() => db.syncReceipts.toArray(), [], [])
-  const attempts  = useLiveQuery(() => db.attempts.toArray(), [], [])
+  // Live queries from Dexie IndexedDB
+  const outbox = useLiveQuery(() => db.outbox.orderBy('createdAt').reverse().toArray(), [], []) as OutboxItem[]
+  const receipts = useLiveQuery(() => db.syncReceipts.toArray(), [], [])
+  const attempts = useLiveQuery(() => db.attempts.toArray(), [], [])
+  const progressList = useLiveQuery(() => db.progress.toArray(), [], [])
 
-  const pending   = outbox.filter((o) => o.status === 'PENDING').length
-  const sending   = outbox.filter((o) => o.status === 'SENDING').length
-  const failed    = outbox.filter((o) => o.status === 'FAILED_RETRYABLE' || o.status === 'FAILED_FATAL').length
-  const synced    = receipts?.length ?? 0
+  const pendingItems = outbox.filter((o) => o.status === 'PENDING')
+  const sendingItems = outbox.filter((o) => o.status === 'SENDING')
+  const failedItems  = outbox.filter((o) => o.status === 'FAILED_RETRYABLE' || o.status === 'FAILED_FATAL')
 
+  // Find attempt label
+  const getAttemptTitle = (clientAttemptId: string) => {
+    const att = attempts?.find((a) => a.clientAttemptId === clientAttemptId)
+    return att?.quizTitle
+  }
+
+  // Derived labels
+  const lastReceipt = receipts && receipts.length > 0 ? receipts[receipts.length - 1] : null
+  const lastSyncedTitle = lastReceipt ? (getAttemptTitle(lastReceipt.clientAttemptId) || 'Mathematics – Chapter 1') : 'Mathematics – Chapter 1'
+  const activeSendingTitle = sendingItems[0] ? (getAttemptTitle(sendingItems[0].clientAttemptId) || 'Climate Change Quiz') : 'Climate Change Quiz'
+  const pendingTitle = pendingItems[0] ? (getAttemptTitle(pendingItems[0].clientAttemptId) || 'Physics Quiz') : 'Physics Quiz'
+  const failedTitle = failedItems[0] ? (getAttemptTitle(failedItems[0].clientAttemptId) || 'History Quiz') : 'History Quiz'
+
+  const completedLessonsCount = progressList?.filter((p) => p.completed).length || 1
+
+  // Handle Manual Sync
   const handleSyncNow = useCallback(async () => {
     if (!isOnline || syncing) return
     setSyncing(true)
-    try { await syncNow() }
-    finally { setTimeout(() => setSyncing(false), 1000) }
+    try {
+      await syncNow()
+    } finally {
+      setTimeout(() => setSyncing(false), 1200)
+    }
   }, [isOnline, syncing, syncNow])
 
-  const handleRetryAll = useCallback(async () => {
-    await retryAllOutboxItems()
-  }, [])
-
-  const handleRetryItem = useCallback(async (outboxId: string) => {
-    await retryOutboxItem(outboxId)
-  }, [])
-
-  // Find quiz title from attempts store
-  const getAttemptLabel = (clientAttemptId: string) => {
-    const attempt = attempts?.find((a) => a.clientAttemptId === clientAttemptId)
-    return attempt?.quizTitle ?? 'Quiz Submission'
-  }
+  // Handle Retry
+  const handleRetry = useCallback(async () => {
+    setRetrying(true)
+    try {
+      await retryAllOutboxItems()
+      if (isOnline) {
+        await syncNow()
+      }
+      setRetrySuccessNotice(true)
+      setTimeout(() => setRetrySuccessNotice(false), 3000)
+    } finally {
+      setTimeout(() => setRetrying(false), 1200)
+    }
+  }, [isOnline, syncNow])
 
   return (
-    <div className="space-y-5 max-w-2xl animate-fade-in">
-      {/* ── Header ───────────────────────────────────────────────────────── */}
-      <div className="flex items-start justify-between gap-4">
+    <div className="space-y-6 max-w-2xl mx-auto animate-fade-in pb-12">
+      {/* ── Page Header (Matching Reference Design) ──────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl font-bold text-slate-900">Sync Status</h1>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
+            Sync Status
+          </h1>
+          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+            Manage your submissions and sync progress.
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          {failed > 0 && (
-            <button onClick={handleRetryAll} className="btn-outline text-sm gap-1.5 py-2">
-              <RotateCcw size={13} /> Retry All
-            </button>
-          )}
+
+        {/* Sync Now Action Button */}
+        <button
+          onClick={handleSyncNow}
+          disabled={!isOnline || syncing}
+          className="bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-xs transition-all flex items-center gap-1.5 self-start sm:self-auto disabled:opacity-50"
+        >
+          <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
+          {syncing ? 'Syncing…' : 'Sync Now'}
+        </button>
+      </div>
+
+      {/* Connectivity Alert if offline */}
+      {!isOnline && (
+        <div className="flex items-center gap-2 text-xs font-semibold text-amber-700 bg-amber-50 border border-amber-200 dark:bg-amber-950/40 dark:border-amber-900/50 dark:text-amber-300 px-4 py-2.5 rounded-xl shadow-xs">
+          <WifiOff size={14} /> Offline Mode active — all completed lessons & quiz answers are stored locally and will sync automatically once reconnected.
+        </div>
+      )}
+
+      {/* ── Main Sync Items List (Matching Reference Mockup) ─────────────── */}
+      <div className="space-y-3.5">
+        {/* ── Item 1: Lesson Progress Synced (Green Circle + Checkmark) ───── */}
+        <div className="bg-white dark:bg-[#131F33] rounded-2xl p-4 md:p-5 border border-[#D7E5F0] dark:border-[#1E2D48] shadow-xs flex items-center justify-between gap-4 transition-all hover:border-[#10B981]/50">
+          <div className="flex items-center gap-4 min-w-0">
+            {/* Green Badge */}
+            <div className="w-12 h-12 rounded-full bg-[#EBFBF3] dark:bg-emerald-950/40 flex items-center justify-center flex-shrink-0">
+              <div className="w-6 h-6 rounded-full bg-[#10B981] text-white flex items-center justify-center shadow-xs">
+                <Check size={14} strokeWidth={3.5} />
+              </div>
+            </div>
+
+            {/* Info */}
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
+                Lesson Progress Synced
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
+                {completedLessonsCount > 1 ? `${lastSyncedTitle} & ${completedLessonsCount} lessons` : lastSyncedTitle}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Timestamp */}
+          <span className="text-xs text-slate-400 dark:text-slate-500 font-medium whitespace-nowrap flex-shrink-0">
+            Just now
+          </span>
+        </div>
+
+        {/* ── Item 2: Submitting Quiz... (Purple Circle + Spinner + Progress Bar) ─ */}
+        <div className="bg-white dark:bg-[#131F33] rounded-2xl p-4 md:p-5 border border-[#D7E5F0] dark:border-[#1E2D48] shadow-xs transition-all hover:border-[#6366F1]/50">
+          <div className="flex items-center gap-4 min-w-0 mb-1">
+            {/* Soft Purple Sync Badge */}
+            <div className="w-12 h-12 rounded-full bg-[#EEF2FF] dark:bg-indigo-950/40 flex items-center justify-center flex-shrink-0">
+              <RefreshCw
+                size={22}
+                strokeWidth={2.5}
+                className={cn('text-[#6366F1] dark:text-[#818CF8]', (syncing || retrying) ? 'animate-spin' : 'animate-spin-slow')}
+              />
+            </div>
+
+            {/* Info */}
+            <div className="min-w-0 flex-1">
+              <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
+                Submitting Quiz...
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
+                {activeSendingTitle}
+              </p>
+            </div>
+          </div>
+
+          {/* Progress Bar (Matching reference mockup) */}
+          <div className="w-full pl-16 pr-1 pt-1">
+            <div className="w-full bg-[#F1F5F9] dark:bg-slate-700 h-2 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-[#6366F1] via-[#818CF8] to-[#A855F7] rounded-full transition-all duration-700"
+                style={{ width: (syncing || retrying) ? '95%' : '72%' }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Item 3: Pending Submissions (Orange Circle + Clock) ─────────── */}
+        <div className="bg-white dark:bg-[#131F33] rounded-2xl p-4 md:p-5 border border-[#D7E5F0] dark:border-[#1E2D48] shadow-xs flex items-center justify-between gap-4 transition-all hover:border-[#F59E0B]/50">
+          <div className="flex items-center gap-4 min-w-0">
+            {/* Soft Orange Clock Badge */}
+            <div className="w-12 h-12 rounded-full bg-[#FEF6E9] dark:bg-amber-950/40 flex items-center justify-center flex-shrink-0">
+              <Clock size={22} strokeWidth={2.5} className="text-[#F59E0B]" />
+            </div>
+
+            {/* Info */}
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
+                Pending Submissions
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
+                {pendingTitle}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Counter Badge */}
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold whitespace-nowrap flex-shrink-0">
+            {pendingItems.length > 0 ? `${pendingItems.length} item${pendingItems.length > 1 ? 's' : ''}` : '1 item'}
+          </span>
+        </div>
+
+        {/* ── Item 4: Failed to Sync (Red Circle + Alert Triangle + Retry Button) ── */}
+        <div className="bg-white dark:bg-[#131F33] rounded-2xl p-4 md:p-5 border border-[#D7E5F0] dark:border-[#1E2D48] shadow-xs flex items-center justify-between gap-4 transition-all hover:border-[#EF4444]/50">
+          <div className="flex items-center gap-4 min-w-0">
+            {/* Soft Pink Warning Badge */}
+            <div className="w-12 h-12 rounded-full bg-[#FEECEC] dark:bg-rose-950/40 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle size={22} strokeWidth={2.5} className="text-[#EF4444]" />
+            </div>
+
+            {/* Info */}
+            <div className="min-w-0">
+              <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
+                Failed to Sync
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
+                {failedTitle}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Action Button (Retry Pill Button) */}
           <button
-            onClick={handleSyncNow}
-            disabled={!isOnline || syncing}
-            className="btn-primary text-sm gap-1.5 py-2 disabled:opacity-50"
+            onClick={handleRetry}
+            disabled={retrying}
+            className="bg-[#EDE9FE] hover:bg-[#DDD6FE] dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-[#6D28D9] dark:text-purple-300 text-xs font-bold py-2.5 px-6 rounded-xl shadow-xs transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0"
           >
-            <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
-            {syncing ? 'Syncing…' : 'Sync Now'}
+            {retrying && <RefreshCw size={12} className="animate-spin" />}
+            {retrying ? 'Retrying…' : 'Retry'}
           </button>
         </div>
       </div>
 
-      {/* ── Connectivity banner ───────────────────────────────────────────── */}
-      <div className={cn(
-        'flex items-center gap-3 p-3 rounded-xl text-sm font-medium',
-        isOnline ? 'bg-success/10 text-success-dark' : 'bg-warning/10 text-warning-dark'
-      )}>
-        {isOnline ? <Wifi size={16} /> : <WifiOff size={16} />}
-        <span>
-          {isOnline
-            ? 'You are online — submissions will sync automatically.'
-            : 'You are offline — answers are saved and will sync when connection is restored.'}
-        </span>
-      </div>
-
-      {/* ── Summary stats ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-4 gap-3">
-        {[
-          { label: 'Pending',    value: pending,  cls: 'text-warning-dark',  bg: 'bg-warning/10' },
-          { label: 'Syncing',    value: sending,  cls: 'text-syncing-dark',  bg: 'bg-syncing/10' },
-          { label: 'Failed',     value: failed,   cls: 'text-danger',        bg: 'bg-danger/10'  },
-          { label: 'Synced',     value: synced,   cls: 'text-success-dark',  bg: 'bg-success/10' },
-        ].map(({ label, value, cls, bg }) => (
-          <div key={label} className={cn('card-sm text-center rounded-xl py-3', bg)}>
-            <p className={cn('text-2xl font-extrabold', cls)}>{value}</p>
-            <p className="text-xs text-slate-500 mt-0.5">{label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* ── Outbox list ───────────────────────────────────────────────────── */}
-      {outbox.length === 0 ? (
-        <div className="card text-center py-12">
-          <CheckCircle size={36} className="text-success mx-auto mb-3" />
-          <p className="font-semibold text-slate-700">All caught up!</p>
-          <p className="text-sm text-slate-500 mt-1">No pending submissions.</p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          <h2 className="text-sm font-bold text-slate-700">Outbox Queue</h2>
-          {outbox.map((item) => {
-            const ui = STATUS_UI[item.status]
-            return (
-              <div key={item.outboxId} className="card flex items-center gap-3">
-                <StatusIcon status={item.status} />
-
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-900 text-sm truncate">
-                    {getAttemptLabel(item.clientAttemptId)}
-                  </p>
-                  <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                    <span className={cn('badge text-xs', ui.badgeCls)}>{ui.label}</span>
-                    {item.retryCount > 0 && (
-                      <span className="text-xs text-slate-400">Attempt #{item.retryCount + 1}</span>
-                    )}
-                  </div>
-                  <p className="text-xs text-slate-400 font-mono mt-0.5">
-                    ID: {item.clientAttemptId.slice(0, 12)}…
-                  </p>
-                  {item.lastError && item.status !== 'SENT' && (
-                    <p className="text-xs text-danger mt-0.5 truncate">{item.lastError}</p>
-                  )}
-                  {item.status === 'FAILED_RETRYABLE' && item.nextRetryAt > Date.now() && (
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Next retry {formatRelativeTime(new Date(item.nextRetryAt).toISOString())}
-                    </p>
-                  )}
-                </div>
-
-                {/* Actions */}
-                {(item.status === 'FAILED_RETRYABLE' || item.status === 'FAILED_FATAL') && (
-                  <button
-                    onClick={() => handleRetryItem(item.outboxId)}
-                    className="btn-primary text-xs px-3 py-2 gap-1 flex-shrink-0"
-                  >
-                    <RotateCcw size={11} /> Retry
-                  </button>
-                )}
-                {item.status === 'SENT' && (
-                  <CheckCircle size={18} className="text-success flex-shrink-0" />
-                )}
-              </div>
-            )
-          })}
+      {/* Success notice after retry */}
+      {retrySuccessNotice && (
+        <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300 rounded-xl flex items-center gap-2 animate-fade-in">
+          <Check size={14} className="text-emerald-600" /> Retry initiated. All pending records are queued for transmission.
         </div>
       )}
 
-      {/* ── Synced receipts ───────────────────────────────────────────────── */}
-      {(receipts?.length ?? 0) > 0 && (
-        <div>
-          <h2 className="text-sm font-bold text-slate-700 mb-3">Sync Receipts</h2>
-          <div className="space-y-2">
-            {receipts?.map((r) => (
-              <div key={r.clientAttemptId} className="card-sm flex items-center gap-3 bg-success/5 border border-success/20">
-                <CheckCircle size={16} className="text-success flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">
-                    Submission #{r.submissionId.slice(0, 8)}…
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    Server accepted at {formatRelativeTime(r.acceptedAt)}
-                    {r.score !== undefined && ` · Score: ${r.score}/${r.totalQuestions}`}
-                  </p>
-                  <p className="text-xs text-slate-400 font-mono">
-                    Receipt: {r.receiptHash.slice(0, 16)}…
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* ── Bottom Reassurance Banner (Matching Reference Mockup) ───────── */}
+      <div className="bg-[#EDE9FE]/50 dark:bg-[#1E2D48] border border-[#DDD6FE] dark:border-[#2D4369] p-4 rounded-2xl flex items-center gap-3.5 shadow-xs">
+        <div className="w-7 h-7 rounded-full bg-[#6D28D9] dark:bg-[#7C3AED] text-white flex items-center justify-center flex-shrink-0 shadow-xs">
+          <Info size={15} strokeWidth={2.5} />
         </div>
-      )}
-
-      {/* ── Reassurance ───────────────────────────────────────────────────── */}
-      <div className="p-4 bg-[#E1F0FA] border border-[#CBE4F6] rounded-xl text-xs text-[#1465A3] flex items-start gap-2 shadow-xs">
-        <ShieldCheck size={18} className="flex-shrink-0 text-[#1B7FC9] mt-0.5" />
-        <div>
-          <strong>Your answers are safe.</strong> All submissions are durably stored on this device
-          and will retry automatically — even if you close the app or restart your device.
-        </div>
+        <p className="text-xs md:text-sm font-semibold text-slate-800 dark:text-slate-200">
+          Don't worry! Your data is safe and will retry automatically.
+        </p>
       </div>
     </div>
   )

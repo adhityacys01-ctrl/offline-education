@@ -65,15 +65,15 @@ export function AppLayout() {
 
   return (
     <div className="flex h-dvh overflow-hidden bg-[#F0F5FA]">
-      {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      <aside className="w-64 bg-[#F4F8FC] border-r border-[#D7E5F0] flex flex-col flex-shrink-0 overflow-y-auto hide-scrollbar select-none">
+      {/* ── Sidebar (Distinct Light Pale Blue) ───────────────────────────── */}
+      <aside className="w-64 bg-[#E1EEF8] dark:bg-[#0E1726] border-r border-[#C5DCF0] dark:border-[#1E2D48] flex flex-col flex-shrink-0 overflow-y-auto hide-scrollbar select-none transition-colors">
         {/* Brand Header without subtext below heading */}
         <div className="p-5 pb-4 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#E1F0FA] text-[#1B7FC9] border border-[#CBE4F6] flex items-center justify-center shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-white text-[#1B7FC9] border border-[#BFDCF2] flex items-center justify-center shadow-xs">
             <GraduationCap size={18} strokeWidth={2.2} />
           </div>
           <div>
-            <h1 className="text-slate-900 font-bold text-sm tracking-tight">LearnHub</h1>
+            <h1 className="text-slate-900 dark:text-slate-100 font-bold text-sm tracking-tight">LearnHub</h1>
           </div>
         </div>
 
@@ -89,8 +89,8 @@ export function AppLayout() {
                 className={({ isActive }) => `
                   flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all
                   ${isActive
-                    ? 'bg-[#E1F0FA] text-[#1465A3] font-bold shadow-xs border border-[#CBE4F6]'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-[#E8F2FA]'
+                    ? 'bg-white dark:bg-[#162C46] text-[#1465A3] dark:text-[#38BDF8] font-bold shadow-xs border border-[#BFDCF2] dark:border-[#223D61]'
+                    : 'text-slate-700 dark:text-slate-300 hover:text-slate-950 dark:hover:text-white hover:bg-[#D2E5F5] dark:hover:bg-[#18263E]'
                   }
                 `}
               >
@@ -121,11 +121,11 @@ export function AppLayout() {
         </nav>
 
         {/* Promo Card: Keep Learning Anywhere! (No sub-words below heading) */}
-        <div className="mx-3 my-2 p-4 rounded-xl bg-white border border-[#D7E5F0] text-center shadow-xs">
-          <div className="w-9 h-9 rounded-xl bg-[#E1F0FA] text-[#1B7FC9] border border-[#CBE4F6] flex items-center justify-center mx-auto mb-2 shadow-xs">
+        <div className="mx-3 my-2 p-4 rounded-xl bg-white dark:bg-[#131F33] border border-[#BFDCF2] dark:border-[#1E2D48] text-center shadow-xs">
+          <div className="w-9 h-9 rounded-xl bg-[#E1EEF8] text-[#1B7FC9] border border-[#BFDCF2] flex items-center justify-center mx-auto mb-2 shadow-xs">
             <Compass size={18} strokeWidth={2.2} />
           </div>
-          <p className="text-slate-900 font-bold text-xs mb-3">Keep Learning Anywhere!</p>
+          <p className="text-slate-900 dark:text-slate-100 font-bold text-xs mb-3">Keep Learning Anywhere!</p>
           <button
             onClick={() => navigate('/downloads')}
             className="w-full py-2 px-3 rounded-lg bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-semibold shadow-xs transition-all"
@@ -135,20 +135,20 @@ export function AppLayout() {
         </div>
 
         {/* Bottom: User Profile Strip */}
-        <div className="p-3 mx-2 mb-2 border-t border-[#D7E5F0] flex items-center gap-2.5">
+        <div className="p-3 mx-2 mb-2 border-t border-[#C5DCF0] dark:border-[#1E2D48] flex items-center gap-2.5">
           <div className="relative flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-[#E1F0FA] text-[#1465A3] font-bold flex items-center justify-center text-xs border border-[#CBE4F6]">
+            <div className="w-8 h-8 rounded-lg bg-white dark:bg-[#162C46] text-[#1465A3] dark:text-[#38BDF8] font-bold flex items-center justify-center text-xs border border-[#BFDCF2] dark:border-[#223D61] shadow-xs">
               {getInitials(user?.name || 'Aarav Sharma')}
             </div>
             <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500' : 'bg-amber-500'} border-2 border-white absolute -bottom-0.5 -right-0.5 shadow-xs`} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-slate-900 text-xs font-semibold truncate">{user?.name || 'Aarav Sharma'}</p>
-            <p className="text-slate-500 text-[10px] truncate capitalize">{user?.role || 'Student'}</p>
+            <p className="text-slate-900 dark:text-slate-100 text-xs font-semibold truncate">{user?.name || 'Aarav Sharma'}</p>
+            <p className="text-slate-600 dark:text-slate-400 text-[10px] truncate capitalize">{user?.role || 'Student'}</p>
           </div>
           <button
             onClick={handleLogout}
-            className="p-1 text-slate-400 hover:text-slate-700 transition-colors"
+            className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
             title="Log out"
           >
             <ChevronDown size={14} />
