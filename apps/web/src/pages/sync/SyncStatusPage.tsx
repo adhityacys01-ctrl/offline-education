@@ -74,9 +74,6 @@ export function SyncStatusPage() {
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
             Sync Status
           </h1>
-          <p className="text-xs md:text-sm text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-            Manage your submissions and sync progress.
-          </p>
         </div>
 
         {/* Sync Now Action Button */}

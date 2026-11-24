@@ -79,8 +79,10 @@ export default function SubmissionDetailPage() {
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">{detail.quizTitle}</h1>
-            <p className="text-sm text-gray-500 mt-0.5">Version {detail.quizVersion}</p>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-bold text-gray-900">{detail.quizTitle}</h1>
+              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs font-medium">v{detail.quizVersion}</span>
+            </div>
           </div>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${
             detail.status === 'GRADED' ? 'bg-success/10 text-success' : 'bg-warning/10 text-warning'
