@@ -1,0 +1,17 @@
+import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator'
+import { ApiProperty } from '@nestjs/swagger'
+
+export class LoginDto {
+  @ApiProperty({ example: 'student@example.com' })
+  @IsEmail()
+  email!: string
+
+  @ApiProperty({ example: 'password123', minLength: 6 })
+  @IsString()
+  @MinLength(6)
+  password!: string
+
+  @ApiProperty({ enum: ['student', 'teacher'] })
+  @IsEnum(['student', 'teacher'])
+  role!: 'student' | 'teacher'
+}

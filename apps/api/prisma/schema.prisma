@@ -1,0 +1,235 @@
+// ─── Prisma Schema ───────────────────────────────────────────────────────────
+// Offline Learning Platform — Phase 1 Foundation
+// All critical uniqueness guarantees enforced at DB level.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// USERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         UserRole @default(student)
+  avatarUrl    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  enrollments         Enrollment[]
+  submissions         Submission[]
+  idempotencyRecords  IdempotencyRecord[]
+  auditEvents         AuditEvent[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  student
+  teacher
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// COURSES
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Course {
+  id                   String   @id @default(uuid())
+  title                String
+  subject              String
+  description          String   @db.Text
+  coverImageUrl        String?
+  offlinePackageSizeMb Float    @default(0)
+  isPublished          Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  // Relations
+  lessons      Lesson[]
+  quizVersions QuizVersion[]
+  enrollments  Enrollment[]
+
+  @@map("courses")
+}
+
+model Enrollment {
+  id        String   @id @default(uuid())
+  studentId String
+  courseId  String
+  createdAt DateTime @default(now())
+
+  student User   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([studentId, courseId])
+  @@map("enrollments")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CONTENT
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Lesson {
+  id           String   @id @default(uuid())
+  courseId     String
+  title        String
+  order        Int
+  contentHtml  String   @db.Text
+  keyPoints    String[]
+  mediaUrl     String?
+  mediaType    String?  // 'video' | 'image' | 'pdf'
+  contentHash  String   // SHA-256 of content for integrity
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, order])
+  @@map("lessons")
+}
+
+model QuizVersion {
+  id          String   @id @default(uuid())
+  courseId    String
+  title       String
+  version     Int      @default(1)
+  contentHash String   // SHA-256 of entire quiz payload
+  isRevoked   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  submissions Submission[]
+
+  @@unique([courseId, version])
+  @@map("quiz_versions")
+}
+
+model Question {
+  id            String   @id @default(uuid())
+  quizVersionId String
+  order         Int
+  prompt        String   @db.Text
+  correctOption String   // option id of correct answer
+  createdAt     DateTime @default(now())
+
+  quizVersion       QuizVersion        @relation(fields: [quizVersionId], references: [id], onDelete: Cascade)
+  options           Option[]
+  submissionAnswers SubmissionAnswer[]
+
+  @@unique([quizVersionId, order])
+  @@map("questions")
+}
+
+model Option {
+  id         String @id @default(uuid())
+  questionId String
+  label      String // 'A', 'B', 'C', 'D'
+  text       String
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("options")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBMISSIONS (Exactly-once guarantee via unique constraints)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model Submission {
+  id              String           @id @default(uuid())
+  studentId       String
+  quizVersionId   String
+  clientAttemptId String           // Client-generated UUID
+  idempotencyKey  String           // Client-generated UUID, frozen at finalization
+  payloadHash     String           // SHA-256 of canonical serialized payload
+  status          SubmissionStatus @default(RECEIVED)
+  score           Int?
+  totalQuestions  Int?
+  receiptHash     String?          // SHA-256 of receipt for client verification
+  startedAt       DateTime
+  finalizedAt     DateTime
+  acceptedAt      DateTime         @default(now())
+
+  student     User        @relation(fields: [studentId], references: [id])
+  quizVersion QuizVersion @relation(fields: [quizVersionId], references: [id])
+  answers     SubmissionAnswer[]
+
+  // ─── CRITICAL: Exactly-one submission per student per attempt ───
+  @@unique([studentId, clientAttemptId], name: "uq_submission_student_attempt")
+  @@map("submissions")
+}
+
+enum SubmissionStatus {
+  RECEIVED
+  GRADED
+}
+
+model SubmissionAnswer {
+  id           String @id @default(uuid())
+  submissionId String
+  questionId   String
+  answeredOptionId String?
+  revision     Int    @default(1)
+  answerJson   Json?
+
+  submission Submission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question   Question   @relation(fields: [questionId], references: [id])
+
+  // ─── CRITICAL: Exactly-one answer per question per submission ───
+  @@unique([submissionId, questionId], name: "uq_submission_question")
+  @@map("submission_answers")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDEMPOTENCY (Exactly-once logical processing guarantee)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model IdempotencyRecord {
+  id             String   @id @default(uuid())
+  studentId      String
+  routeScope     String   // e.g. 'POST:/submissions'
+  idempotencyKey String
+  payloadHash    String
+  responseJson   Json?    // Cached response to replay on duplicate
+  createdAt      DateTime @default(now())
+  expiresAt      DateTime
+
+  student User @relation(fields: [studentId], references: [id])
+
+  // ─── CRITICAL: Exactly-one idempotency record per student+route+key ───
+  @@unique([studentId, routeScope, idempotencyKey], name: "uq_idempotency_scope_key")
+  @@map("idempotency_records")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUDIT LOG (Append-only)
+// ─────────────────────────────────────────────────────────────────────────────
+
+model AuditEvent {
+  id              String   @id @default(uuid())
+  actorId         String?
+  eventType       String   // 'submission.created' | 'submission.duplicate_blocked' | etc.
+  correlationId   String?
+  clientAttemptId String?
+  idempotencyKey  String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([clientAttemptId])
+  @@index([idempotencyKey])
+  @@map("audit_events")
+}
