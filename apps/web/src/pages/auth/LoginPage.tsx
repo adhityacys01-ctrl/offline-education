@@ -16,11 +16,25 @@ export function LoginPage({ initialSignup = false }: LoginPageProps) {
   const [isSignup, setIsSignup] = useState(initialSignup)
   const [role, setRole]         = useState<Role>('student')
   const [name, setName]         = useState('')
-  const [email, setEmail]       = useState('')
-  const [password, setPassword] = useState('')
+  const [email, setEmail]       = useState('aarav@student.com')
+  const [password, setPassword] = useState('password123')
   const [showPw, setShowPw]     = useState(false)
   const [loading, setLoading]   = useState(false)
   const [error, setError]       = useState<string | null>(null)
+
+  const handleRoleChange = (selectedRole: Role) => {
+    setRole(selectedRole)
+    setError(null)
+    if (!isSignup) {
+      if (selectedRole === 'teacher') {
+        setEmail('teacher@school.com')
+        setPassword('password123')
+      } else {
+        setEmail('aarav@student.com')
+        setPassword('password123')
+      }
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,7 +86,7 @@ export function LoginPage({ initialSignup = false }: LoginPageProps) {
           <button
             key={r}
             type="button"
-            onClick={() => setRole(r)}
+            onClick={() => handleRoleChange(r)}
             className={`flex-1 py-2 text-xs font-semibold rounded-lg capitalize transition-all ${
               role === r
                 ? 'bg-white shadow-xs text-[#1465A3] font-bold border border-[#CBE4F6]'

@@ -15,6 +15,11 @@ import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { QuizPlayerPage } from '@/pages/quiz/QuizPlayerPage';
 import { LessonViewerPage } from '@/pages/lesson/LessonViewerPage';
 import TeacherDashboardPage from '@/pages/teacher/TeacherDashboardPage';
+import TeacherCoursesPage from '@/pages/teacher/TeacherCoursesPage';
+import TeacherProgressPage from '@/pages/teacher/TeacherProgressPage';
+import TeacherAssessmentReviewPage from '@/pages/teacher/TeacherAssessmentReviewPage';
+import TeacherSyncMonitoringPage from '@/pages/teacher/TeacherSyncMonitoringPage';
+import TeacherReportsPage from '@/pages/teacher/TeacherReportsPage';
 import SubmissionDetailPage from '@/pages/teacher/SubmissionDetailPage';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { useAuthStore } from '@/store/authStore';
@@ -33,7 +38,31 @@ function ProtectedRoute({ children }) {
         return _jsx(Navigate, { to: "/login", replace: true });
     return _jsx(_Fragment, { children: children });
 }
+function RoleBasedDashboard() {
+    const { user } = useAuthStore();
+    if (user?.role === 'teacher')
+        return _jsx(TeacherDashboardPage, {});
+    return _jsx(DashboardPage, {});
+}
+function RoleBasedCourses() {
+    const { user } = useAuthStore();
+    if (user?.role === 'teacher')
+        return _jsx(TeacherCoursesPage, {});
+    return _jsx(CoursesPage, {});
+}
+function RoleBasedProgress() {
+    const { user } = useAuthStore();
+    if (user?.role === 'teacher')
+        return _jsx(TeacherProgressPage, {});
+    return _jsx(ProgressPage, {});
+}
+function RoleBasedSync() {
+    const { user } = useAuthStore();
+    if (user?.role === 'teacher')
+        return _jsx(TeacherSyncMonitoringPage, {});
+    return _jsx(SyncStatusPage, {});
+}
 export default function App() {
-    return (_jsx(ErrorBoundary, { children: _jsx(QueryClientProvider, { client: queryClient, children: _jsx(BrowserRouter, { children: _jsxs(Routes, { children: [_jsxs(Route, { element: _jsx(AuthLayout, {}), children: [_jsx(Route, { path: "/login", element: _jsx(LoginPage, {}) }), _jsx(Route, { path: "/signup", element: _jsx(LoginPage, { initialSignup: true }) })] }), _jsxs(Route, { element: _jsx(ProtectedRoute, { children: _jsx(AppLayout, {}) }), children: [_jsx(Route, { index: true, element: _jsx(Navigate, { to: "/dashboard", replace: true }) }), _jsx(Route, { path: "/dashboard", element: _jsx(DashboardPage, {}) }), _jsx(Route, { path: "/courses", element: _jsx(CoursesPage, {}) }), _jsx(Route, { path: "/courses/:courseId", element: _jsx(CourseDetailPage, {}) }), _jsx(Route, { path: "/quizzes", element: _jsx(QuizzesPage, {}) }), _jsx(Route, { path: "/quiz/:quizVersionId", element: _jsx(QuizPlayerPage, {}) }), _jsx(Route, { path: "/courses/:courseId/quiz/:quizVersionId", element: _jsx(QuizPlayerPage, {}) }), _jsx(Route, { path: "/courses/:courseId/lessons/:lessonId", element: _jsx(LessonViewerPage, {}) }), _jsx(Route, { path: "/downloads", element: _jsx(DownloadsPage, {}) }), _jsx(Route, { path: "/progress", element: _jsx(ProgressPage, {}) }), _jsx(Route, { path: "/sync", element: _jsx(SyncStatusPage, {}) }), _jsx(Route, { path: "/settings", element: _jsx(SettingsPage, {}) }), _jsx(Route, { path: "/teacher/dashboard", element: _jsx(TeacherDashboardPage, {}) }), _jsx(Route, { path: "/teacher/submissions/:submissionId", element: _jsx(SubmissionDetailPage, {}) })] }), _jsx(Route, { path: "*", element: _jsx(Navigate, { to: "/dashboard", replace: true }) })] }) }) }) }));
+    return (_jsx(ErrorBoundary, { children: _jsx(QueryClientProvider, { client: queryClient, children: _jsx(BrowserRouter, { children: _jsxs(Routes, { children: [_jsxs(Route, { element: _jsx(AuthLayout, {}), children: [_jsx(Route, { path: "/login", element: _jsx(LoginPage, {}) }), _jsx(Route, { path: "/signup", element: _jsx(LoginPage, { initialSignup: true }) })] }), _jsxs(Route, { element: _jsx(ProtectedRoute, { children: _jsx(AppLayout, {}) }), children: [_jsx(Route, { index: true, element: _jsx(Navigate, { to: "/dashboard", replace: true }) }), _jsx(Route, { path: "/dashboard", element: _jsx(RoleBasedDashboard, {}) }), _jsx(Route, { path: "/courses", element: _jsx(RoleBasedCourses, {}) }), _jsx(Route, { path: "/courses/:courseId", element: _jsx(CourseDetailPage, {}) }), _jsx(Route, { path: "/quizzes", element: _jsx(QuizzesPage, {}) }), _jsx(Route, { path: "/quiz/:quizVersionId", element: _jsx(QuizPlayerPage, {}) }), _jsx(Route, { path: "/courses/:courseId/quiz/:quizVersionId", element: _jsx(QuizPlayerPage, {}) }), _jsx(Route, { path: "/courses/:courseId/lessons/:lessonId", element: _jsx(LessonViewerPage, {}) }), _jsx(Route, { path: "/downloads", element: _jsx(DownloadsPage, {}) }), _jsx(Route, { path: "/progress", element: _jsx(RoleBasedProgress, {}) }), _jsx(Route, { path: "/sync", element: _jsx(RoleBasedSync, {}) }), _jsx(Route, { path: "/settings", element: _jsx(SettingsPage, {}) }), _jsx(Route, { path: "/teacher/dashboard", element: _jsx(TeacherDashboardPage, {}) }), _jsx(Route, { path: "/teacher/courses", element: _jsx(TeacherCoursesPage, {}) }), _jsx(Route, { path: "/teacher/progress", element: _jsx(TeacherProgressPage, {}) }), _jsx(Route, { path: "/teacher/assessments", element: _jsx(TeacherAssessmentReviewPage, {}) }), _jsx(Route, { path: "/teacher/submissions", element: _jsx(TeacherAssessmentReviewPage, {}) }), _jsx(Route, { path: "/teacher/submissions/:submissionId", element: _jsx(SubmissionDetailPage, {}) }), _jsx(Route, { path: "/teacher/sync", element: _jsx(TeacherSyncMonitoringPage, {}) }), _jsx(Route, { path: "/teacher/reports", element: _jsx(TeacherReportsPage, {}) })] }), _jsx(Route, { path: "*", element: _jsx(Navigate, { to: "/dashboard", replace: true }) })] }) }) }) }));
 }
 //# sourceMappingURL=App.js.map

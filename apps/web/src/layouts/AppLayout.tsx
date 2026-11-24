@@ -10,7 +10,7 @@ import { db } from '@/db/database'
 import {
   LayoutDashboard, BookOpen, Download, TrendingUp,
   RefreshCw, Settings, Bell, Search,
-  ClipboardList, CheckSquare,
+  ClipboardList, CheckSquare, Users, BarChart3,
   Sun, Moon, ChevronDown, WifiOff, GraduationCap, Compass
 } from 'lucide-react'
 
@@ -33,9 +33,13 @@ const STUDENT_NAV: NavItem[] = [
 ]
 
 const TEACHER_NAV: NavItem[] = [
-  { to: '/teacher/dashboard', icon: ClipboardList, label: 'Submissions' },
-  { to: '/courses',           icon: BookOpen,      label: 'Courses' },
-  { to: '/settings',          icon: Settings,      label: 'Settings' },
+  { to: '/teacher/dashboard',   icon: LayoutDashboard, label: 'Dashboard' },
+  { to: '/teacher/courses',     icon: BookOpen,        label: 'My Courses' },
+  { to: '/teacher/progress',    icon: Users,           label: 'Student Progress' },
+  { to: '/teacher/assessments', icon: ClipboardList,   label: 'Assessment Review' },
+  { to: '/teacher/sync',        icon: RefreshCw,       label: 'Sync Monitoring', hasDot: true },
+  { to: '/teacher/reports',     icon: BarChart3,       label: 'Reports & Analytics' },
+  { to: '/settings',            icon: Settings,        label: 'Settings' },
 ]
 
 export function AppLayout() {
@@ -120,17 +124,19 @@ export function AppLayout() {
           })}
         </nav>
 
-        {/* Promo Card: Keep Learning Anywhere! (No sub-words below heading) */}
+        {/* Promo Card */}
         <div className="mx-3 my-2 p-4 rounded-xl bg-white dark:bg-[#131F33] border border-[#BFDCF2] dark:border-[#1E2D48] text-center shadow-xs">
           <div className="w-9 h-9 rounded-xl bg-[#E1EEF8] text-[#1B7FC9] border border-[#BFDCF2] flex items-center justify-center mx-auto mb-2 shadow-xs">
             <Compass size={18} strokeWidth={2.2} />
           </div>
-          <p className="text-slate-900 dark:text-slate-100 font-bold text-xs mb-3">Keep Learning Anywhere!</p>
+          <p className="text-slate-900 dark:text-slate-100 font-bold text-xs mb-3">
+            {isTeacher ? 'Class Sync Status' : 'Keep Learning Anywhere!'}
+          </p>
           <button
-            onClick={() => navigate('/downloads')}
+            onClick={() => navigate(isTeacher ? '/teacher/sync' : '/downloads')}
             className="w-full py-2 px-3 rounded-lg bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-semibold shadow-xs transition-all"
           >
-            Go Offline
+            {isTeacher ? 'Sync Monitoring' : 'Go Offline'}
           </button>
         </div>
 

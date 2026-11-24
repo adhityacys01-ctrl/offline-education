@@ -14,6 +14,11 @@ import { SettingsPage } from '@/pages/settings/SettingsPage'
 import { QuizPlayerPage } from '@/pages/quiz/QuizPlayerPage'
 import { LessonViewerPage } from '@/pages/lesson/LessonViewerPage'
 import TeacherDashboardPage from '@/pages/teacher/TeacherDashboardPage'
+import TeacherCoursesPage from '@/pages/teacher/TeacherCoursesPage'
+import TeacherProgressPage from '@/pages/teacher/TeacherProgressPage'
+import TeacherAssessmentReviewPage from '@/pages/teacher/TeacherAssessmentReviewPage'
+import TeacherSyncMonitoringPage from '@/pages/teacher/TeacherSyncMonitoringPage'
+import TeacherReportsPage from '@/pages/teacher/TeacherReportsPage'
 import SubmissionDetailPage from '@/pages/teacher/SubmissionDetailPage'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { useAuthStore } from '@/store/authStore'
@@ -34,6 +39,30 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
+function RoleBasedDashboard() {
+  const { user } = useAuthStore()
+  if (user?.role === 'teacher') return <TeacherDashboardPage />
+  return <DashboardPage />
+}
+
+function RoleBasedCourses() {
+  const { user } = useAuthStore()
+  if (user?.role === 'teacher') return <TeacherCoursesPage />
+  return <CoursesPage />
+}
+
+function RoleBasedProgress() {
+  const { user } = useAuthStore()
+  if (user?.role === 'teacher') return <TeacherProgressPage />
+  return <ProgressPage />
+}
+
+function RoleBasedSync() {
+  const { user } = useAuthStore()
+  if (user?.role === 'teacher') return <TeacherSyncMonitoringPage />
+  return <SyncStatusPage />
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -49,20 +78,27 @@ export default function App() {
           {/* Protected App */}
           <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
             <Route index element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/courses" element={<CoursesPage />} />
+            <Route path="/dashboard" element={<RoleBasedDashboard />} />
+            <Route path="/courses" element={<RoleBasedCourses />} />
             <Route path="/courses/:courseId" element={<CourseDetailPage />} />
             <Route path="/quizzes" element={<QuizzesPage />} />
             <Route path="/quiz/:quizVersionId" element={<QuizPlayerPage />} />
             <Route path="/courses/:courseId/quiz/:quizVersionId" element={<QuizPlayerPage />} />
             <Route path="/courses/:courseId/lessons/:lessonId" element={<LessonViewerPage />} />
             <Route path="/downloads" element={<DownloadsPage />} />
-            <Route path="/progress" element={<ProgressPage />} />
-            <Route path="/sync" element={<SyncStatusPage />} />
+            <Route path="/progress" element={<RoleBasedProgress />} />
+            <Route path="/sync" element={<RoleBasedSync />} />
             <Route path="/settings" element={<SettingsPage />} />
-            {/* Teacher Portal */}
+
+            {/* Teacher Portal Explicit Routes */}
             <Route path="/teacher/dashboard" element={<TeacherDashboardPage />} />
+            <Route path="/teacher/courses" element={<TeacherCoursesPage />} />
+            <Route path="/teacher/progress" element={<TeacherProgressPage />} />
+            <Route path="/teacher/assessments" element={<TeacherAssessmentReviewPage />} />
+            <Route path="/teacher/submissions" element={<TeacherAssessmentReviewPage />} />
             <Route path="/teacher/submissions/:submissionId" element={<SubmissionDetailPage />} />
+            <Route path="/teacher/sync" element={<TeacherSyncMonitoringPage />} />
+            <Route path="/teacher/reports" element={<TeacherReportsPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
