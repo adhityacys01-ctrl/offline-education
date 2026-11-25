@@ -51,6 +51,8 @@ function getCatalogLesson(lessonId) {
                     order: ld.order,
                     contentHtml: ld.contentHtml,
                     keyPoints: ld.keyPoints,
+                    translations: ld.translations,
+                    glossary: ld.glossary,
                     mediaUrl: null,
                     mediaType: null,
                     contentHash: `sha256-lesson-${c.id}-${ld.order}`,
@@ -164,10 +166,109 @@ export async function computeSHA256(data) {
 // ── Delete a downloaded pack (free storage) ────────────────────────────────────
 export async function deleteCoursePack(courseId) {
     const packId = `pack-${courseId}-v1`;
-    await db.transaction('rw', [db.coursePacks, db.contentItems], async () => {
+    await db.transaction('rw', [db.coursePacks, db.contentItems, db.lessonTranslations, db.glossaryEntries], async () => {
         await db.contentItems.where('packId').equals(packId).delete();
+        await db.lessonTranslations.where('courseId').equals(courseId).delete();
+        await db.glossaryEntries.where('courseId').equals(courseId).delete();
         await db.coursePacks.delete(packId);
     });
+}
+// ── Multilingual Offline Pack Helpers ─────────────────────────────────────────
+function getAuthToken() {
+    try {
+        const raw = localStorage.getItem('olp-auth');
+        if (!raw)
+            return null;
+        return JSON.parse(raw)?.state?.accessToken ?? null;
+    }
+    catch {
+        return null;
+    }
+}
+export async function downloadCourseTranslations(courseId, languages) {
+    const token = getAuthToken();
+    if (!token || languages.length === 0) {
+        return { translationCount: 0, glossaryCount: 0 };
+    }
+    const res = await fetch(`/api/v1/multilingual/pack/${courseId}?languages=${languages.join(',')}`, {
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) {
+        throw new Error(`Failed to fetch translations (${res.status})`);
+    }
+    const data = await res.json();
+    const now = Date.now();
+    const translations = (data.translations || []).map((t) => ({
+        id: `${t.lessonId}::${t.language}`,
+        serverId: t.id,
+        lessonId: t.lessonId,
+        courseId,
+        language: t.language,
+        translatedTitle: t.translatedTitle,
+        translatedContent: t.translatedContent,
+        revision: t.revision || 1,
+        approvalStatus: t.approvalStatus,
+        savedAt: now,
+    }));
+    const glossary = (data.glossary || []).map((g) => ({
+        id: g.id,
+        lessonId: g.lessonId,
+        courseId,
+        term: g.term,
+        enDef: g.enDef,
+        hiDef: g.hiDef ?? null,
+        mrDef: g.mrDef ?? null,
+        enEquiv: g.enEquiv ?? null,
+        hiEquiv: g.hiEquiv ?? null,
+        mrEquiv: g.mrEquiv ?? null,
+        approvalStatus: g.approvalStatus,
+        savedAt: now,
+    }));
+    await db.transaction('rw', [db.lessonTranslations, db.glossaryEntries], async () => {
+        if (translations.length > 0)
+            await db.lessonTranslations.bulkPut(translations);
+        if (glossary.length > 0)
+            await db.glossaryEntries.bulkPut(glossary);
+    });
+    // Also cache any generated audio blobs offline
+    for (const t of translations) {
+        try {
+            const audRes = await fetch(`/api/v1/multilingual/audio/${t.serverId}/${t.language}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            if (audRes.ok) {
+                const aud = await audRes.json();
+                let blob;
+                if (aud.fileRef) {
+                    const fRes = await fetch(aud.fileRef, { headers: { Authorization: `Bearer ${token}` } });
+                    if (fRes.ok)
+                        blob = await fRes.blob();
+                }
+                await db.audioCache.put({
+                    id: `${t.lessonId}::${t.language}`,
+                    lessonId: t.lessonId,
+                    language: t.language,
+                    fileRef: aud.fileRef ?? null,
+                    blob,
+                    ttsLangCode: aud.ttsLangCode || (t.language === 'hi' ? 'hi-IN' : 'mr-IN'),
+                    savedAt: now,
+                });
+            }
+        }
+        catch { }
+    }
+    return { translationCount: translations.length, glossaryCount: glossary.length };
+}
+export async function getOfflineTranslation(lessonId, language) {
+    if (language === 'en')
+        return null;
+    return db.lessonTranslations.get(`${lessonId}::${language}`);
+}
+export async function getOfflineGlossary(lessonId) {
+    return db.glossaryEntries.where('lessonId').equals(lessonId).toArray();
+}
+export async function getOfflineAudio(lessonId, language) {
+    return db.audioCache.get(`${lessonId}::${language}`);
 }
 // ── Get local pack status ─────────────────────────────────────────────────────
 export async function getPackStatus(courseId) {
@@ -226,6 +327,54 @@ export async function getLocalLesson(lessonId) {
                 sizeBytes: 2048,
                 savedAt: Date.now(),
             });
+            // Also persist translations if available
+            if (fallback.translations) {
+                const now = Date.now();
+                if (fallback.translations.hi) {
+                    await db.lessonTranslations.put({
+                        id: `${fallback.id}::hi`,
+                        serverId: `seed-${fallback.id}-hi`,
+                        lessonId: fallback.id,
+                        courseId: fallback.courseId,
+                        language: 'hi',
+                        translatedTitle: fallback.translations.hi.title,
+                        translatedContent: fallback.translations.hi.contentHtml,
+                        revision: 1,
+                        approvalStatus: 'PUBLISHED',
+                        savedAt: now,
+                    }).catch(() => { });
+                }
+                if (fallback.translations.mr) {
+                    await db.lessonTranslations.put({
+                        id: `${fallback.id}::mr`,
+                        serverId: `seed-${fallback.id}-mr`,
+                        lessonId: fallback.id,
+                        courseId: fallback.courseId,
+                        language: 'mr',
+                        translatedTitle: fallback.translations.mr.title,
+                        translatedContent: fallback.translations.mr.contentHtml,
+                        revision: 1,
+                        approvalStatus: 'PUBLISHED',
+                        savedAt: now,
+                    }).catch(() => { });
+                }
+            }
+            if (fallback.glossary && Array.isArray(fallback.glossary)) {
+                await db.glossaryEntries.bulkPut(fallback.glossary.map((g, idx) => ({
+                    id: g.id || `gloss-${fallback.id}-${idx}`,
+                    lessonId: fallback.id,
+                    courseId: fallback.courseId,
+                    term: g.term,
+                    enDef: g.enDef,
+                    hiDef: g.hiDef ?? null,
+                    mrDef: g.mrDef ?? null,
+                    enEquiv: g.enEquiv ?? g.term,
+                    hiEquiv: g.hiEquiv ?? null,
+                    mrEquiv: g.mrEquiv ?? null,
+                    approvalStatus: 'PUBLISHED',
+                    savedAt: Date.now(),
+                }))).catch(() => { });
+            }
         }
         catch { }
         return fallback;

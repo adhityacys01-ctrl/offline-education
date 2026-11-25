@@ -111,3 +111,42 @@ export interface LessonProgress {
   position?:  number    // scroll position or section index
   updatedAt:  number
 }
+
+// ── Multilingual Offline Cache ────────────────────────────────────────────────
+export interface OfflineLessonTranslation {
+  id:                string  // `${lessonId}::${language}`
+  serverId:          string
+  lessonId:          string
+  courseId:          string
+  language:          'en' | 'hi' | 'mr'
+  translatedTitle:   string
+  translatedContent: string
+  revision:          number
+  approvalStatus:    string
+  savedAt:           number
+}
+
+export interface OfflineGlossaryEntry {
+  id:             string
+  lessonId:       string
+  courseId:       string
+  term:           string
+  enDef:          string
+  hiDef?:         string | null
+  mrDef?:         string | null
+  enEquiv?:       string | null
+  hiEquiv?:       string | null
+  mrEquiv?:       string | null
+  approvalStatus: string
+  savedAt:        number
+}
+
+export interface OfflineAudioCache {
+  id:         string  // `${lessonId}::${language}`
+  lessonId:   string
+  language:   'en' | 'hi' | 'mr'
+  fileRef?:   string | null
+  blob?:      Blob
+  ttsLangCode: string
+  savedAt:    number
+}

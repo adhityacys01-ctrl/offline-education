@@ -7,10 +7,12 @@ import { useManualSync } from '@/hooks/useSyncEngine'
 import { Check, RefreshCw, Clock, AlertTriangle, Info, WifiOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { OutboxItem } from '@/db/types'
+import { useI18n } from '@/lib/i18n'
 
 export function SyncStatusPage() {
   const isOnline = useOnlineStatus()
   const { syncNow } = useManualSync()
+  const { t } = useI18n()
   const [syncing, setSyncing] = useState(false)
   const [retrying, setRetrying] = useState(false)
   const [retrySuccessNotice, setRetrySuccessNotice] = useState(false)
@@ -23,7 +25,7 @@ export function SyncStatusPage() {
 
   const pendingItems = outbox.filter((o) => o.status === 'PENDING')
   const sendingItems = outbox.filter((o) => o.status === 'SENDING')
-  const failedItems  = outbox.filter((o) => o.status === 'FAILED_RETRYABLE' || o.status === 'FAILED_FATAL')
+  const failedItems = outbox.filter((o) => o.status === 'FAILED_RETRYABLE' || o.status === 'FAILED_FATAL')
 
   // Find attempt label
   const getAttemptTitle = (clientAttemptId: string) => {
@@ -72,7 +74,7 @@ export function SyncStatusPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-            Sync Status
+            {t('syncTitle')}
           </h1>
         </div>
 
@@ -83,7 +85,7 @@ export function SyncStatusPage() {
           className="bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-xs transition-all flex items-center gap-1.5 self-start sm:self-auto disabled:opacity-50"
         >
           <RefreshCw size={13} className={syncing ? 'animate-spin' : ''} />
-          {syncing ? 'Syncing…' : 'Sync Now'}
+          {syncing ? `${t('saving')}` : t('syncNow')}
         </button>
       </div>
 
@@ -109,7 +111,7 @@ export function SyncStatusPage() {
             {/* Info */}
             <div className="min-w-0">
               <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
-                Lesson Progress Synced
+                {t('lessonProgressSynced')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
                 {completedLessonsCount > 1 ? `${lastSyncedTitle} & ${completedLessonsCount} lessons` : lastSyncedTitle}
@@ -138,7 +140,7 @@ export function SyncStatusPage() {
             {/* Info */}
             <div className="min-w-0 flex-1">
               <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
-                Submitting Quiz...
+                {t('submittingQuiz')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
                 {activeSendingTitle}
@@ -168,7 +170,7 @@ export function SyncStatusPage() {
             {/* Info */}
             <div className="min-w-0">
               <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
-                Pending Submissions
+                {t('pendingSubmissions')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
                 {pendingTitle}
@@ -193,7 +195,7 @@ export function SyncStatusPage() {
             {/* Info */}
             <div className="min-w-0">
               <h3 className="font-extrabold text-sm md:text-base text-slate-900 dark:text-slate-100 truncate">
-                Failed to Sync
+                {t('failedToSync')}
               </h3>
               <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5 truncate">
                 {failedTitle}
@@ -208,7 +210,7 @@ export function SyncStatusPage() {
             className="bg-[#EDE9FE] hover:bg-[#DDD6FE] dark:bg-purple-950/60 dark:hover:bg-purple-900/60 text-[#6D28D9] dark:text-purple-300 text-xs font-bold py-2.5 px-6 rounded-xl shadow-xs transition-all active:scale-95 disabled:opacity-50 flex items-center gap-1.5 flex-shrink-0"
           >
             {retrying && <RefreshCw size={12} className="animate-spin" />}
-            {retrying ? 'Retrying…' : 'Retry'}
+            {retrying ? t('retrying') : t('retry')}
           </button>
         </div>
       </div>
@@ -216,7 +218,7 @@ export function SyncStatusPage() {
       {/* Success notice after retry */}
       {retrySuccessNotice && (
         <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-xs font-semibold text-emerald-700 dark:text-emerald-300 rounded-xl flex items-center gap-2 animate-fade-in">
-          <Check size={14} className="text-emerald-600" /> Retry initiated. All pending records are queued for transmission.
+          <Check size={14} className="text-emerald-600" /> {t('retryInitiated')}
         </div>
       )}
 
@@ -226,7 +228,7 @@ export function SyncStatusPage() {
           <Info size={15} strokeWidth={2.5} />
         </div>
         <p className="text-xs md:text-sm font-semibold text-slate-800 dark:text-slate-200">
-          Don't worry! Your data is safe and will retry automatically.
+          {t('syncReassurance')}
         </p>
       </div>
     </div>

@@ -10,11 +10,13 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { useCoursePacks } from '@/hooks/useDownload'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
+import { useI18n } from '@/lib/i18n'
 
 export function DashboardPage() {
   const { user } = useAuthStore()
   const isOnline = useOnlineStatus()
   const navigate = useNavigate()
+  const { t, translateCourseTitle } = useI18n()
   const [timeRange, setTimeRange] = useState('Last 30 Days')
 
   // Live dynamic data from IndexedDB
@@ -36,7 +38,7 @@ export function DashboardPage() {
   }
 
   const hour = new Date().getHours()
-  const greeting = hour < 12 ? 'Good Morning' : hour < 17 ? 'Good Afternoon' : 'Good Evening'
+  const greeting = hour < 12 ? t('goodMorning') : hour < 17 ? t('goodAfternoon') : t('goodEvening')
   const studentName = user?.name ? user.name.split(' ')[0] : 'Aarav'
 
   return (
@@ -70,8 +72,8 @@ export function DashboardPage() {
           <div className="hidden sm:flex items-center gap-3 bg-[#F0F5FA] border border-[#D7E5F0] px-4 py-2.5 rounded-xl">
             <Award size={18} className="text-[#1B7FC9]" />
             <div className="text-right">
-              <span className="text-xs font-bold text-slate-900 block leading-tight">Semester Track</span>
-              <span className="text-[11px] text-[#1B7FC9] font-semibold">Active & Synced</span>
+              <span className="text-xs font-bold text-slate-900 block leading-tight">{t('semesterTrack')}</span>
+              <span className="text-[11px] text-[#1B7FC9] font-semibold">{t('activeSynced')}</span>
             </div>
           </div>
         </div>
@@ -80,7 +82,7 @@ export function DashboardPage() {
         <div className="lg:col-span-4 rounded-2xl bg-white border border-[#D7E5F0] p-5 shadow-card flex flex-col justify-between">
           <div className="flex items-center gap-2 mb-3">
             <Zap size={15} className="text-[#1B7FC9]" />
-            <h2 className="font-bold text-xs tracking-wide text-slate-900 uppercase">Quick Actions</h2>
+            <h2 className="font-bold text-xs tracking-wide text-slate-900 uppercase">{t('quickActions')}</h2>
           </div>
 
           <div className="space-y-2">
@@ -91,7 +93,7 @@ export function DashboardPage() {
             >
               <div className="flex items-center gap-2.5">
                 <Play size={12} className="text-[#1B7FC9]" />
-                <span>Continue Learning</span>
+                <span>{t('continueLearning')}</span>
               </div>
               <ChevronRight size={13} className="text-slate-400" />
             </button>
@@ -103,7 +105,7 @@ export function DashboardPage() {
             >
               <div className="flex items-center gap-2.5">
                 <CheckSquare size={12} className="text-[#1B7FC9]" />
-                <span>Take a Quiz</span>
+                <span>{t('takeQuiz')}</span>
               </div>
               <ChevronRight size={13} className="text-slate-400" />
             </button>
@@ -115,7 +117,7 @@ export function DashboardPage() {
             >
               <div className="flex items-center gap-2.5">
                 <Download size={12} className="text-[#1B7FC9]" />
-                <span>Download Content</span>
+                <span>{t('downloadContent')}</span>
               </div>
               <ChevronRight size={13} className="text-slate-400" />
             </button>
@@ -131,10 +133,10 @@ export function DashboardPage() {
             <BookOpen size={18} strokeWidth={2.2} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium leading-none mb-1">My Courses</p>
+            <p className="text-xs text-slate-500 font-medium leading-none mb-1">{t('coursesTitle')}</p>
             <p className="text-xl font-bold text-slate-900 leading-none mb-1">{downloadedCount}</p>
             <p className="text-[11px] font-semibold text-emerald-600">
-              +1 this month
+              {t('thisMonthPlus')}
             </p>
           </div>
         </div>
@@ -145,10 +147,10 @@ export function DashboardPage() {
             <CheckCircle2 size={18} strokeWidth={2.2} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium leading-none mb-1">Completed Lessons</p>
+            <p className="text-xs text-slate-500 font-medium leading-none mb-1">{t('completedLessons')}</p>
             <p className="text-xl font-bold text-slate-900 leading-none mb-1">{completedLessons}</p>
             <p className="text-[11px] font-semibold text-emerald-600">
-              +20%
+              {t('onTrack')}
             </p>
           </div>
         </div>
@@ -159,24 +161,24 @@ export function DashboardPage() {
             <Award size={18} strokeWidth={2.2} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium leading-none mb-1">Quiz Score (Avg)</p>
+            <p className="text-xs text-slate-500 font-medium leading-none mb-1">{t('averageScore')}</p>
             <p className="text-xl font-bold text-slate-900 leading-none mb-1">{avgScore}%</p>
             <p className="text-[11px] font-semibold text-emerald-600">
-              +2%
+              {t('passingGrade')}
             </p>
           </div>
         </div>
 
-        {/* Metric 4: Learning Hours */}
+        {/* Metric 4: Pending Sync */}
         <div className="card p-4 flex items-center gap-4">
           <div className="w-11 h-11 rounded-xl bg-[#E1F0FA] text-[#1B7FC9] flex items-center justify-center flex-shrink-0 border border-[#CBE4F6]">
             <Clock size={18} strokeWidth={2.2} />
           </div>
           <div>
-            <p className="text-xs text-slate-500 font-medium leading-none mb-1">Learning Hours</p>
-            <p className="text-xl font-bold text-slate-900 leading-none mb-1">24.5 h</p>
+            <p className="text-xs text-slate-500 font-medium leading-none mb-1">{t('pendingSync')}</p>
+            <p className="text-xl font-bold text-slate-900 leading-none mb-1">0</p>
             <p className="text-[11px] font-semibold text-emerald-600">
-              +5%
+              {t('allSynced')}
             </p>
           </div>
         </div>
@@ -335,7 +337,7 @@ export function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">Mathematics</p>
+                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">{translateCourseTitle('Mathematics')}</p>
                     <span className="text-[11px] font-bold text-slate-600">80%</span>
                   </div>
                   <div className="w-full bg-[#E8F2FA] h-1.5 rounded-full overflow-hidden">
@@ -357,7 +359,7 @@ export function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">Physics</p>
+                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">{translateCourseTitle('Physics')}</p>
                     <span className="text-[11px] font-bold text-slate-600">95%</span>
                   </div>
                   <div className="w-full bg-[#E8F2FA] h-1.5 rounded-full overflow-hidden">
@@ -379,7 +381,7 @@ export function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">Chemistry</p>
+                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">{translateCourseTitle('Chemistry')}</p>
                     <span className="text-[11px] font-bold text-slate-600">65%</span>
                   </div>
                   <div className="w-full bg-[#E8F2FA] h-1.5 rounded-full overflow-hidden">
@@ -401,7 +403,7 @@ export function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">Biology</p>
+                    <p className="font-semibold text-slate-800 text-xs truncate group-hover:text-[#1B7FC9] transition-colors">{translateCourseTitle('Biology')}</p>
                     <span className="text-[11px] font-bold text-slate-600">70%</span>
                   </div>
                   <div className="w-full bg-[#E8F2FA] h-1.5 rounded-full overflow-hidden">

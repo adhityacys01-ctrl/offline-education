@@ -2,9 +2,11 @@ import { useNavigate } from 'react-router-dom'
 import { BookOpen, CheckCircle2, Award, Clock, ArrowRight, Download, Play } from 'lucide-react'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
+import { useI18n } from '@/lib/i18n'
 
 export function ProgressPage() {
   const navigate = useNavigate()
+  const { t, translateSubject } = useI18n()
 
   // Real offline data from Dexie
   const packs = useLiveQuery(() => db.coursePacks.toArray(), [], [])
@@ -32,9 +34,9 @@ export function ProgressPage() {
   // Subject-wise progress data
   const subjects = [
     { name: 'Mathematics', pct: 92, courseId: 'seed-course-mathematics' },
-    { name: 'Biology',     pct: 78, courseId: 'seed-course-biology' },
-    { name: 'History',     pct: 70, courseId: 'seed-course-history' },
-    { name: 'Science',     pct: 65, courseId: 'seed-course-computer-science' },
+    { name: 'Biology', pct: 78, courseId: 'seed-course-biology' },
+    { name: 'History', pct: 70, courseId: 'seed-course-history' },
+    { name: 'Science', pct: 65, courseId: 'seed-course-computer-science' },
   ]
 
   // Recent activity entries
@@ -67,7 +69,7 @@ export function ProgressPage() {
       {/* ── Page Header (Without descriptive subtext below heading) ────── */}
       <div>
         <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-          Your Progress
+          {t('progress')}
         </h1>
       </div>
 
@@ -82,7 +84,7 @@ export function ProgressPage() {
             {courseCount}
           </p>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Courses Enrolled
+            {t('coursesTitle')}
           </p>
         </div>
 
@@ -95,7 +97,7 @@ export function ProgressPage() {
             {quizzesCompleted}
           </p>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Quizzes Completed
+            {t('quizzes')} {t('completed')}
           </p>
         </div>
 
@@ -108,7 +110,7 @@ export function ProgressPage() {
             {avgScore}%
           </p>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Average Score
+            {t('averageScore')}
           </p>
         </div>
 
@@ -210,7 +212,7 @@ export function ProgressPage() {
                 >
                   <div className="flex items-center justify-between text-xs mb-1.5">
                     <span className="font-semibold text-slate-700 group-hover:text-[#1B7FC9] transition-colors">
-                      {subj.name}
+                      {translateSubject(subj.name)}
                     </span>
                     <span className="font-bold text-slate-900">
                       {subj.pct}%

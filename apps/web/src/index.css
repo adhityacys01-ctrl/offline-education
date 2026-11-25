@@ -127,6 +127,20 @@
   }
   .offline-pill.offline { @apply bg-warning/15 text-warning-dark border border-warning/30; }
   .offline-pill.online  { @apply bg-success/15 text-success-dark; }
+
+  /* ── Formula Box / Card (User Sample Matches) ─────────────── */
+  .formula-box, .formula-card {
+    @apply my-5 p-6 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] text-center shadow-xs transition-all;
+  }
+  .formula-line {
+    @apply font-serif italic text-lg md:text-xl text-slate-800 my-3 tracking-wide select-text block;
+  }
+  .formula-line span.upright, .formula-line .unit {
+    @apply font-sans not-italic font-medium text-slate-700;
+  }
+  .formula-caption {
+    @apply font-sans not-italic text-xs text-slate-500 mt-2 font-medium;
+  }
 }
 
 @layer utilities {
@@ -249,6 +263,26 @@ html.dark .quiz-option.selected {
   background-color: #162C46 !important;
   border-color: #38BDF8 !important;
   color: #FFFFFF !important;
+}
+
+html.dark .formula-box,
+html.dark .formula-card {
+  background-color: #131F33 !important;
+  border-color: #1E2D48 !important;
+  color: #F8FAFC !important;
+}
+
+html.dark .formula-line {
+  color: #E2E8F0 !important;
+}
+
+html.dark .formula-line span.upright,
+html.dark .formula-line .unit {
+  color: #CBD5E1 !important;
+}
+
+html.dark .formula-caption {
+  color: #94A3B8 !important;
 }
 
 html.dark ::-webkit-scrollbar-thumb {

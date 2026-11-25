@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Plus, ArrowRight, X, BookOpen, CheckSquare, Check } from 'lucide-react'
 import { COURSE_CATALOG } from '@/data/course-data'
+import { useI18n } from '@/lib/i18n'
 
 interface TeacherCourse {
   id: string
@@ -51,6 +52,7 @@ const INITIAL_COURSES: TeacherCourse[] = [
 ]
 
 export default function TeacherCoursesPage() {
+  const { t, translateCourseTitle } = useI18n()
   const [courses, setCourses] = useState<TeacherCourse[]>(INITIAL_COURSES)
   const [selectedCourse, setSelectedCourse] = useState<TeacherCourse | null>(null)
   const [showCreateModal, setShowCreateModal] = useState(false)
@@ -87,7 +89,7 @@ export default function TeacherCoursesPage() {
   // Find detailed lessons and quizzes from catalog for selected course
   const catalogMatch = COURSE_CATALOG.find(
     (c) => c.title.toLowerCase().includes(selectedCourse?.title.toLowerCase() || '') ||
-           c.subject.toLowerCase().includes(selectedCourse?.title.toLowerCase() || '')
+      c.subject.toLowerCase().includes(selectedCourse?.title.toLowerCase() || '')
   ) || COURSE_CATALOG[0]
 
   return (
@@ -95,14 +97,14 @@ export default function TeacherCoursesPage() {
       {/* ── Page Header (Strictly NO subheadings) ─────────────────────────── */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-          My Courses
+          {t('myCourses')}
         </h1>
         <button
           onClick={() => setShowCreateModal(true)}
           className="px-4 py-2 rounded-xl bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-bold shadow-xs transition-all flex items-center gap-1.5"
         >
           <Plus size={15} />
-          Create Course
+          {t('createCourse')}
         </button>
       </div>
 
@@ -121,7 +123,7 @@ export default function TeacherCoursesPage() {
               />
               <div className="min-w-0">
                 <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">
-                  {course.title}
+                  {translateCourseTitle(course.title)}
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
                   {course.grade}
@@ -131,11 +133,11 @@ export default function TeacherCoursesPage() {
                 <div className="flex items-center gap-4 mt-2.5 text-xs font-semibold">
                   <span className="flex items-center gap-1.5 text-slate-600 dark:text-slate-300">
                     <span className={`w-2 h-2 rounded-full ${course.studentDotColor}`} />
-                    {course.students} Students
+                    {course.students} {t('studentsCountLabel')}
                   </span>
                   <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                     <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                    {course.avgScore}% Avg Score
+                    {course.avgScore}% {t('averageScore')}
                   </span>
                 </div>
               </div>
@@ -145,7 +147,7 @@ export default function TeacherCoursesPage() {
               onClick={() => setSelectedCourse(course)}
               className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[#E1EEF8] dark:bg-[#1A2E46] text-[#1465A3] dark:text-[#38BDF8] text-xs font-bold hover:bg-[#1B7FC9] hover:text-white transition-all flex items-center justify-center gap-1.5 flex-shrink-0"
             >
-              View Details <ArrowRight size={14} />
+              {t('viewDetails')} <ArrowRight size={14} />
             </button>
           </div>
         ))}

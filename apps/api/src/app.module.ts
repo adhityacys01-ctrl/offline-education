@@ -9,6 +9,7 @@ import { SubmissionsModule } from './submissions/submissions.module'
 import { SyncModule } from './sync/sync.module'
 import { TeacherModule } from './teacher/teacher.module'
 import { AdminModule } from './admin/admin.module'
+import { MultilingualModule } from './multilingual/multilingual.module'
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AdminModule } from './admin/admin.module'
     SyncModule,
     TeacherModule,
     AdminModule,
+    MultilingualModule,
   ],
 })
 export class AppModule {}

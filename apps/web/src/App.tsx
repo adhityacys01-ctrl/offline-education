@@ -20,6 +20,7 @@ import TeacherAssessmentReviewPage from '@/pages/teacher/TeacherAssessmentReview
 import TeacherSyncMonitoringPage from '@/pages/teacher/TeacherSyncMonitoringPage'
 import TeacherReportsPage from '@/pages/teacher/TeacherReportsPage'
 import SubmissionDetailPage from '@/pages/teacher/SubmissionDetailPage'
+import TranslationStudioPage from '@/pages/teacher/TranslationStudioPage'
 import AdminDashboardPage from '@/pages/admin/AdminDashboardPage'
 import AdminUsersPage from '@/pages/admin/AdminUsersPage'
 import AdminSyncMonitorPage from '@/pages/admin/AdminSyncMonitorPage'
@@ -112,6 +113,8 @@ export default function App() {
             <Route path="/teacher/submissions/:submissionId" element={<SubmissionDetailPage />} />
             <Route path="/teacher/sync"        element={<TeacherSyncMonitoringPage />} />
             <Route path="/teacher/reports"     element={<TeacherReportsPage />} />
+            <Route path="/teacher/translations" element={<TranslationStudioPage />} />
+            <Route path="/teacher/translations/:lessonId" element={<TranslationStudioPage />} />
 
             {/* Admin Portal */}
             <Route path="/admin"                   element={<AdminRoute><AdminDashboardPage /></AdminRoute>} />

@@ -4,6 +4,7 @@ import {
   BookOpen, Users, FileText, AlertTriangle, ArrowRight,
   CheckCircle2, MessageSquare, RefreshCw
 } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 
 interface CourseItem {
   id: string
@@ -43,6 +44,7 @@ const ASSIGNED_COURSES: CourseItem[] = [
 
 export default function TeacherDashboardPage() {
   const navigate = useNavigate()
+  const { t, translateCourseTitle } = useI18n()
   const [hoveredDay, setHoveredDay] = useState<string | null>(null)
 
   // Chart data points
@@ -61,7 +63,7 @@ export default function TeacherDashboardPage() {
       {/* ── Page Header (Strictly NO descriptive subheadings) ────────────────── */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-          Teacher Dashboard
+          {t('teacherDashboardTitle')}
         </h1>
       </div>
 
@@ -77,7 +79,7 @@ export default function TeacherDashboardPage() {
           </div>
           <div>
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">5</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Courses</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('coursesCountLabel')}</p>
           </div>
         </div>
 
@@ -91,7 +93,7 @@ export default function TeacherDashboardPage() {
           </div>
           <div>
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">120</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Students</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('studentsCountLabel')}</p>
           </div>
         </div>
 
@@ -105,7 +107,7 @@ export default function TeacherDashboardPage() {
           </div>
           <div>
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">85</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Submissions</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('submissionsCountLabel')}</p>
           </div>
         </div>
 
@@ -119,7 +121,7 @@ export default function TeacherDashboardPage() {
           </div>
           <div>
             <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">12</p>
-            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Pending Review</p>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">{t('pendingReviewCountLabel')}</p>
           </div>
         </div>
       </div>
@@ -130,16 +132,16 @@ export default function TeacherDashboardPage() {
         <div className="lg:col-span-8 bg-white dark:bg-[#131F33] rounded-2xl border border-[#D7E5F0] dark:border-[#1E2D48] p-5 flex flex-col justify-between shadow-xs">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-              Course Performance
+              {t('coursePerformance')}
             </h2>
             <div className="flex items-center gap-4 text-xs font-semibold">
               <span className="flex items-center gap-1.5 text-[#1B7FC9]">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#1B7FC9]" />
-                This Month
+                {t('thisMonth')}
               </span>
               <span className="flex items-center gap-1.5 text-slate-400">
                 <span className="w-2.5 h-2.5 rounded-full border border-slate-400" />
-                Last Month
+                {t('lastMonth')}
               </span>
             </div>
           </div>
@@ -238,7 +240,7 @@ export default function TeacherDashboardPage() {
         <div className="lg:col-span-4 bg-white dark:bg-[#131F33] rounded-2xl border border-[#D7E5F0] dark:border-[#1E2D48] p-5 flex flex-col justify-between shadow-xs">
           <div>
             <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 mb-4">
-              Recent Activity
+              {t('recentActivity')}
             </h2>
 
             <div className="space-y-4">
@@ -247,8 +249,8 @@ export default function TeacherDashboardPage() {
                   <FileText size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">New submission</p>
-                  <p className="text-[11px] text-slate-400">5 min ago</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{t('newSubmission')}</p>
+                  <p className="text-[11px] text-slate-400">5 {t('minAgo')}</p>
                 </div>
               </div>
 
@@ -257,8 +259,8 @@ export default function TeacherDashboardPage() {
                   <MessageSquare size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">Feedback added</p>
-                  <p className="text-[11px] text-slate-400">5 min ago</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{t('feedbackAdded')}</p>
+                  <p className="text-[11px] text-slate-400">5 {t('minAgo')}</p>
                 </div>
               </div>
 
@@ -267,8 +269,8 @@ export default function TeacherDashboardPage() {
                   <CheckCircle2 size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">Quiz completed</p>
-                  <p className="text-[11px] text-slate-400">10 min ago</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{t('quizCompletedActivity')}</p>
+                  <p className="text-[11px] text-slate-400">10 {t('minAgo')}</p>
                 </div>
               </div>
 
@@ -277,8 +279,8 @@ export default function TeacherDashboardPage() {
                   <RefreshCw size={15} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">Offline batch synced</p>
-                  <p className="text-[11px] text-slate-400">25 min ago</p>
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">{t('allSynced')}</p>
+                  <p className="text-[11px] text-slate-400">25 {t('minAgo')}</p>
                 </div>
               </div>
             </div>
@@ -288,7 +290,7 @@ export default function TeacherDashboardPage() {
             onClick={() => navigate('/teacher/assessments')}
             className="w-full mt-4 py-2 text-xs font-semibold text-[#1465A3] bg-[#E1EEF8] dark:bg-[#1A2E46] hover:bg-[#D2E5F5] rounded-xl transition-all text-center"
           >
-            View All Activity
+            {t('viewAll')}
           </button>
         </div>
       </div>
@@ -297,13 +299,13 @@ export default function TeacherDashboardPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-base font-bold text-slate-900 dark:text-slate-100">
-            Assigned Courses
+            {t('assignedCourses')}
           </h2>
           <button
             onClick={() => navigate('/teacher/courses')}
             className="text-xs font-bold text-[#1B7FC9] hover:text-[#1465A3] flex items-center gap-1 transition-colors"
           >
-            View All <ArrowRight size={13} />
+            {t('viewAll')} <ArrowRight size={13} />
           </button>
         </div>
 
@@ -321,10 +323,10 @@ export default function TeacherDashboardPage() {
                 />
                 <div className="min-w-0">
                   <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">
-                    {course.title}
+                    {translateCourseTitle(course.title)}
                   </h3>
                   <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                    {course.students} Students • {course.avgScore}% Avg Score
+                    {course.students} {t('studentsCountLabel')} • {course.avgScore}% {t('averageScore')}
                   </p>
                 </div>
               </div>
@@ -333,7 +335,7 @@ export default function TeacherDashboardPage() {
                 onClick={() => navigate('/teacher/courses')}
                 className="px-4 py-2 rounded-xl bg-[#E1EEF8] dark:bg-[#1A2E46] text-[#1465A3] dark:text-[#38BDF8] text-xs font-bold hover:bg-[#1B7FC9] hover:text-white transition-all flex-shrink-0"
               >
-                View
+                {t('view')}
               </button>
             </div>
           ))}

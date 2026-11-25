@@ -1,5 +1,5 @@
 import Dexie, { type Table } from 'dexie';
-import type { CoursePack, ContentItem, Attempt, Answer, OutboxItem, SyncReceipt, LessonProgress } from './types';
+import type { CoursePack, ContentItem, Attempt, Answer, OutboxItem, SyncReceipt, LessonProgress, OfflineLessonTranslation, OfflineGlossaryEntry, OfflineAudioCache } from './types';
 export declare class OfflineLearningDB extends Dexie {
     coursePacks: Table<CoursePack, string>;
     contentItems: Table<ContentItem, string>;
@@ -8,6 +8,9 @@ export declare class OfflineLearningDB extends Dexie {
     outbox: Table<OutboxItem, string>;
     syncReceipts: Table<SyncReceipt, string>;
     progress: Table<LessonProgress, string>;
+    lessonTranslations: Table<OfflineLessonTranslation, string>;
+    glossaryEntries: Table<OfflineGlossaryEntry, string>;
+    audioCache: Table<OfflineAudioCache, string>;
     constructor();
 }
 export declare const db: OfflineLearningDB;

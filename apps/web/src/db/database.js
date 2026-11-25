@@ -45,6 +45,24 @@ export class OfflineLearningDB extends Dexie {
             writable: true,
             value: void 0
         });
+        Object.defineProperty(this, "lessonTranslations", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "glossaryEntries", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
+        Object.defineProperty(this, "audioCache", {
+            enumerable: true,
+            configurable: true,
+            writable: true,
+            value: void 0
+        });
         this.version(1).stores({
             // Primary key first, then indexed fields
             coursePacks: 'id, courseId, status',
@@ -54,6 +72,18 @@ export class OfflineLearningDB extends Dexie {
             outbox: 'outboxId, clientAttemptId, status, nextRetryAt',
             syncReceipts: 'clientAttemptId, submissionId',
             progress: 'id, studentId, lessonId, courseId, [studentId+courseId]',
+        });
+        this.version(2).stores({
+            coursePacks: 'id, courseId, status',
+            contentItems: 'id, courseId, packId, type, [courseId+type]',
+            attempts: 'clientAttemptId, quizVersionId, courseId, status',
+            answers: 'id, clientAttemptId, questionId, [clientAttemptId+questionId]',
+            outbox: 'outboxId, clientAttemptId, status, nextRetryAt',
+            syncReceipts: 'clientAttemptId, submissionId',
+            progress: 'id, studentId, lessonId, courseId, [studentId+courseId]',
+            lessonTranslations: 'id, lessonId, courseId, language, [lessonId+language]',
+            glossaryEntries: 'id, lessonId, courseId, term',
+            audioCache: 'id, lessonId, language',
         });
     }
 }

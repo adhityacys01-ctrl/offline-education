@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDown, Search, X } from 'lucide-react'
+import { useI18n } from '@/lib/i18n'
 
 interface StudentProgressRecord {
   id: string
@@ -71,6 +72,7 @@ const STUDENTS_DATA: StudentProgressRecord[] = [
 ]
 
 export default function TeacherProgressPage() {
+  const { t, translateCourseTitle } = useI18n()
   const [courseFilter, setCourseFilter] = useState('All Courses')
   const [timeFilter, setTimeFilter] = useState('Last 30 Days')
   const [search, setSearch] = useState('')
@@ -87,7 +89,7 @@ export default function TeacherProgressPage() {
       {/* ── Page Header (Strictly NO subheadings) ─────────────────────────── */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-          Student Progress
+          {t('studentProgress')}
         </h1>
       </div>
 
@@ -100,11 +102,11 @@ export default function TeacherProgressPage() {
             onChange={(e) => setCourseFilter(e.target.value)}
             className="appearance-none pl-4 pr-9 py-2 bg-white dark:bg-[#131F33] border border-[#D7E5F0] dark:border-[#1E2D48] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1B7FC9]"
           >
-            <option value="All Courses">All Courses</option>
-            <option value="Mathematics">Mathematics</option>
-            <option value="Science">Science</option>
-            <option value="History">History</option>
-            <option value="Environmental Science">Environmental Science</option>
+            <option value="All Courses">{t('allCourses')}</option>
+            <option value="Mathematics">{translateCourseTitle('Mathematics')}</option>
+            <option value="Science">{translateCourseTitle('Science')}</option>
+            <option value="History">{translateCourseTitle('History')}</option>
+            <option value="Environmental Science">{translateCourseTitle('Environmental Science')}</option>
           </select>
           <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
         </div>
@@ -117,7 +119,7 @@ export default function TeacherProgressPage() {
             className="appearance-none pl-4 pr-9 py-2 bg-white dark:bg-[#131F33] border border-[#D7E5F0] dark:border-[#1E2D48] rounded-xl text-xs font-bold text-slate-800 dark:text-slate-200 shadow-xs cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#1B7FC9]"
           >
             <option value="Last 7 Days">Last 7 Days</option>
-            <option value="Last 30 Days">Last 30 Days</option>
+            <option value="Last 30 Days">{t('last30Days')}</option>
             <option value="Academic Term">Academic Term</option>
           </select>
           <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
@@ -143,16 +145,16 @@ export default function TeacherProgressPage() {
             <thead>
               <tr className="border-b border-[#D7E5F0] dark:border-[#1E2D48] bg-[#F8FAFC] dark:bg-[#0E1726]/50">
                 <th className="py-3.5 px-5 text-xs font-bold text-slate-600 dark:text-slate-300">
-                  Student
+                  {t('student')}
                 </th>
                 <th className="py-3.5 px-5 text-xs font-bold text-slate-600 dark:text-slate-300">
-                  Course
+                  {t('course')}
                 </th>
                 <th className="py-3.5 px-5 text-xs font-bold text-slate-600 dark:text-slate-300">
-                  Progress
+                  {t('progress')}
                 </th>
                 <th className="py-3.5 px-5 text-xs font-bold text-slate-600 dark:text-slate-300 text-right">
-                  Average Score
+                  {t('averageScore')}
                 </th>
               </tr>
             </thead>

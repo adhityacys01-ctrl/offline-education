@@ -93,7 +93,8 @@ model Lesson {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  course       Course              @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  translations LessonTranslation[]
 
   @@unique([courseId, order])
   @@map("lessons")
@@ -233,4 +234,82 @@ model AuditEvent {
   @@index([clientAttemptId])
   @@index([idempotencyKey])
   @@map("audit_events")
+}
+
+// ─── MULTILINGUAL ─────────────────────────────────────────────────────────────
+
+model LessonTranslation {
+  id               String   @id @default(uuid())
+  lessonId         String
+  sourceVersion    Int      @default(1)
+  language         String
+  translatedTitle  String
+  translatedContent String  @db.Text
+  revision         Int      @default(1)
+  validationStatus String   @default("PENDING")
+  validationReport Json?
+  approvalStatus   String   @default("DRAFT")
+  approverId       String?
+  publishedAt      DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  lesson          Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  glossaryEntries GlossaryEntry[]
+  audioFiles      LessonAudio[]
+  auditHistory    TranslationAudit[]
+
+  @@unique([lessonId, language, revision])
+  @@map("lesson_translations")
+}
+
+model GlossaryEntry {
+  id             String   @id @default(uuid())
+  translationId  String
+  lessonId       String
+  term           String
+  enDef          String   @db.Text
+  hiDef          String?  @db.Text
+  mrDef          String?  @db.Text
+  enEquiv        String?
+  hiEquiv        String?
+  mrEquiv        String?
+  approvalStatus String   @default("DRAFT")
+  revision       Int      @default(1)
+  createdAt      DateTime @default(now())
+
+  translation LessonTranslation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+
+  @@map("glossary_entries")
+}
+
+model LessonAudio {
+  id               String   @id @default(uuid())
+  translationId    String
+  language         String
+  revision         Int      @default(1)
+  fileRef          String?
+  durationSeconds  Float?
+  sizeBytes        Int?
+  generationStatus String   @default("PENDING")
+  createdAt        DateTime @default(now())
+
+  translation LessonTranslation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+
+  @@map("lesson_audio")
+}
+
+model TranslationAudit {
+  id            String   @id @default(uuid())
+  translationId String
+  actorId       String
+  action        String
+  prevRevision  Int?
+  newRevision   Int
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  translation LessonTranslation @relation(fields: [translationId], references: [id], onDelete: Cascade)
+
+  @@map("translation_audits")
 }

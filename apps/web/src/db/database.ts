@@ -7,17 +7,23 @@ import type {
   OutboxItem,
   SyncReceipt,
   LessonProgress,
+  OfflineLessonTranslation,
+  OfflineGlossaryEntry,
+  OfflineAudioCache,
 } from './types'
 
 export class OfflineLearningDB extends Dexie {
   // ── Tables ─────────────────────────────────────────────────────────────────
-  coursePacks!:   Table<CoursePack,     string>
-  contentItems!:  Table<ContentItem,    string>
-  attempts!:      Table<Attempt,        string>
-  answers!:       Table<Answer,         string>
-  outbox!:        Table<OutboxItem,     string>
-  syncReceipts!:  Table<SyncReceipt,    string>
-  progress!:      Table<LessonProgress, string>
+  coursePacks!:        Table<CoursePack,               string>
+  contentItems!:       Table<ContentItem,              string>
+  attempts!:           Table<Attempt,                  string>
+  answers!:            Table<Answer,                   string>
+  outbox!:             Table<OutboxItem,               string>
+  syncReceipts!:       Table<SyncReceipt,              string>
+  progress!:           Table<LessonProgress,           string>
+  lessonTranslations!: Table<OfflineLessonTranslation, string>
+  glossaryEntries!:    Table<OfflineGlossaryEntry,     string>
+  audioCache!:         Table<OfflineAudioCache,        string>
 
   constructor() {
     super('OfflineLearningPlatform')
@@ -31,6 +37,19 @@ export class OfflineLearningDB extends Dexie {
       outbox:       'outboxId, clientAttemptId, status, nextRetryAt',
       syncReceipts: 'clientAttemptId, submissionId',
       progress:     'id, studentId, lessonId, courseId, [studentId+courseId]',
+    })
+
+    this.version(2).stores({
+      coursePacks:        'id, courseId, status',
+      contentItems:       'id, courseId, packId, type, [courseId+type]',
+      attempts:           'clientAttemptId, quizVersionId, courseId, status',
+      answers:            'id, clientAttemptId, questionId, [clientAttemptId+questionId]',
+      outbox:             'outboxId, clientAttemptId, status, nextRetryAt',
+      syncReceipts:       'clientAttemptId, submissionId',
+      progress:           'id, studentId, lessonId, courseId, [studentId+courseId]',
+      lessonTranslations: 'id, lessonId, courseId, language, [lessonId+language]',
+      glossaryEntries:    'id, lessonId, courseId, term',
+      audioCache:         'id, lessonId, language',
     })
   }
 }

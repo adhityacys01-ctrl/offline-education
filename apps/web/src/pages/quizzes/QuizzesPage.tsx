@@ -10,10 +10,13 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
+import { getQuizTranslation } from '@/data/quiz-translations'
 
 export function QuizzesPage() {
   const navigate = useNavigate()
   const isOnline = useOnlineStatus()
+  const { language, t, translateSubject } = useI18n()
   const [selectedSubject, setSelectedSubject] = useState<string>('All')
 
   // 1. Fetch server quizzes if online
@@ -64,7 +67,7 @@ export function QuizzesPage() {
     if (!seenIds.has(item.id)) {
       seenIds.add(item.id)
       let parsed: any = null
-      try { parsed = JSON.parse(item.contentJson) } catch {}
+      try { parsed = JSON.parse(item.contentJson) } catch { }
       quizList.push({
         quizVersionId: item.id,
         courseId: item.courseId,
@@ -91,17 +94,17 @@ export function QuizzesPage() {
       <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-[#F0F7FD] via-[#E1F0FA] to-[#CBE4F6] p-6 md:p-8 text-slate-900 border border-[#CBE4F6] shadow-xs">
         <div className="relative z-10 max-w-xl">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-[#CBE4F6] text-xs font-bold text-[#1465A3] mb-3">
-            <HelpCircle size={14} /> Interactive Knowledge Quizzes
+            <HelpCircle size={14} /> {t('interactiveQuizzes')}
           </div>
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">Quizzes & Assessments</h1>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight mb-4">{t('quizzesTitle')}</h1>
           <div className="flex flex-wrap gap-4 text-xs">
             <div className="bg-white px-3.5 py-1.5 rounded-xl border border-[#D7E5F0] shadow-xs flex items-center gap-2">
               <BookOpen size={14} className="text-[#1B7FC9]" />
-              <span><strong>{quizList.length}</strong> Quizzes Available</span>
+              <span><strong>{quizList.length}</strong> {t('quizzesAvailable')}</span>
             </div>
             <div className="bg-white px-3.5 py-1.5 rounded-xl border border-[#D7E5F0] shadow-xs flex items-center gap-2">
               <CheckCircle size={14} className="text-emerald-600" />
-              <span><strong>{completedCount}</strong> Completed</span>
+              <span><strong>{completedCount}</strong> {t('completed')}</span>
             </div>
           </div>
         </div>
@@ -120,7 +123,7 @@ export function QuizzesPage() {
                 : 'bg-white border border-[#D7E5F0] text-slate-700 hover:border-[#1B7FC9]'
             )}
           >
-            <span>{sub}</span>
+            <span>{sub === 'All' ? t('allSubjects') : translateSubject(sub)}</span>
           </button>
         ))}
       </div>
@@ -145,6 +148,8 @@ export function QuizzesPage() {
             const attempt = attemptByQuiz.get(quiz.quizVersionId)
             const isCompleted = !!receipt || attempt?.status === 'SYNCED'
 
+            const translatedTitle = getQuizTranslation(quiz.title, language)?.title || quiz.title
+
             return (
               <div
                 key={quiz.quizVersionId}
@@ -157,26 +162,26 @@ export function QuizzesPage() {
                   {/* Top Bar */}
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#E1F0FA] text-[#1465A3] border border-[#CBE4F6]">
-                      {quiz.subject}
+                      {translateSubject(quiz.subject)}
                     </span>
                     {isCompleted ? (
                       <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1">
-                        <CheckCircle size={11} /> Completed
+                        <CheckCircle size={11} /> {t('completed')}
                       </span>
                     ) : attempt?.status === 'DRAFT' ? (
                       <span className="bg-amber-50 text-amber-700 border border-amber-200 px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                        In Progress
+                        {t('inProgress')}
                       </span>
                     ) : (
                       <span className="bg-[#E1F0FA] text-[#1465A3] border border-[#CBE4F6] px-2.5 py-0.5 rounded-full text-[10px] font-bold">
-                        Ready
+                        {t('offlineReady')}
                       </span>
                     )}
                   </div>
 
                   {/* Title & Course */}
                   <h3 className="font-bold text-slate-900 text-base mb-1 leading-snug line-clamp-2">
-                    {quiz.title}
+                    {translatedTitle}
                   </h3>
                   <p className="text-xs text-slate-500 mb-3 truncate flex items-center gap-1">
                     <BookOpen size={12} className="text-slate-400" />
@@ -187,12 +192,12 @@ export function QuizzesPage() {
                   <div className="flex items-center gap-3 text-xs text-slate-500 bg-[#F8FAFC] p-2.5 rounded-xl mb-4 border border-[#D7E5F0]">
                     <span className="flex items-center gap-1">
                       <HelpCircle size={13} className="text-[#1B7FC9]" />
-                      <strong>{quiz.questionCount}</strong> questions
+                      <strong>{quiz.questionCount}</strong> {t('questionCount')}
                     </span>
                     <span className="text-slate-300">|</span>
                     <span className="flex items-center gap-1">
                       <Clock size={13} className="text-slate-400" />
-                      {quiz.timeLimitMins} mins
+                      {quiz.timeLimitMins} {t('timeLimitMins')}
                     </span>
                   </div>
 
@@ -200,7 +205,7 @@ export function QuizzesPage() {
                   {receipt && receipt.score !== undefined && (
                     <div className="mb-4 p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between text-xs font-semibold text-emerald-800">
                       <span className="flex items-center gap-1">
-                        <Award size={14} /> Score Achieved:
+                        <Award size={14} /> {t('yourScore')}:
                       </span>
                       <span className="text-sm font-bold">{receipt.score} / {receipt.totalQuestions ?? quiz.questionCount}</span>
                     </div>
@@ -225,11 +230,11 @@ export function QuizzesPage() {
                   >
                     {isCompleted ? (
                       <>
-                        <RotateCcw size={12} /> Retake Quiz
+                        <RotateCcw size={12} /> {t('retakeQuiz')}
                       </>
                     ) : (
                       <>
-                        <HelpCircle size={12} /> Start Quiz
+                        <HelpCircle size={12} /> {t('startAssessment')}
                       </>
                     )}
                   </button>

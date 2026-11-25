@@ -6,6 +6,7 @@ import { LocalStore } from './local-store'
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   public isConnected = false
   public localStore = new LocalStore()
+  private superDelegates: Record<string, any> = {}
 
   constructor() {
     super()
@@ -23,10 +24,15 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       'submissionAnswer',
       'idempotencyRecord',
       'auditEvent',
+      'lessonTranslation',
+      'glossaryEntry',
+      'lessonAudio',
+      'translationAudit',
     ] as const
 
     for (const m of models) {
       const superDelegate = (this as any)[m]
+      this.superDelegates[m] = superDelegate
       Object.defineProperty(this, m, {
         get: () => (this.isConnected ? superDelegate : (this.localStore as any)[m]),
         configurable: true,
@@ -55,39 +61,55 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   }
 
   override get user(): Prisma.UserDelegate {
-    return (this.isConnected ? super.user : this.localStore.user) as any
+    return (this.isConnected ? this.superDelegates.user : this.localStore.user) as any
   }
 
   override get course(): Prisma.CourseDelegate {
-    return (this.isConnected ? super.course : this.localStore.course) as any
+    return (this.isConnected ? this.superDelegates.course : this.localStore.course) as any
   }
 
   override get lesson(): Prisma.LessonDelegate {
-    return (this.isConnected ? super.lesson : this.localStore.lesson) as any
+    return (this.isConnected ? this.superDelegates.lesson : this.localStore.lesson) as any
   }
 
   override get quizVersion(): Prisma.QuizVersionDelegate {
-    return (this.isConnected ? super.quizVersion : this.localStore.quizVersion) as any
+    return (this.isConnected ? this.superDelegates.quizVersion : this.localStore.quizVersion) as any
   }
 
   override get enrollment(): Prisma.EnrollmentDelegate {
-    return (this.isConnected ? super.enrollment : this.localStore.enrollment) as any
+    return (this.isConnected ? this.superDelegates.enrollment : this.localStore.enrollment) as any
   }
 
   override get submission(): Prisma.SubmissionDelegate {
-    return (this.isConnected ? super.submission : this.localStore.submission) as any
+    return (this.isConnected ? this.superDelegates.submission : this.localStore.submission) as any
   }
 
   override get submissionAnswer(): Prisma.SubmissionAnswerDelegate {
-    return (this.isConnected ? super.submissionAnswer : this.localStore.submissionAnswer) as any
+    return (this.isConnected ? this.superDelegates.submissionAnswer : this.localStore.submissionAnswer) as any
   }
 
   override get idempotencyRecord(): Prisma.IdempotencyRecordDelegate {
-    return (this.isConnected ? super.idempotencyRecord : this.localStore.idempotencyRecord) as any
+    return (this.isConnected ? this.superDelegates.idempotencyRecord : this.localStore.idempotencyRecord) as any
   }
 
   override get auditEvent(): Prisma.AuditEventDelegate {
-    return (this.isConnected ? super.auditEvent : this.localStore.auditEvent) as any
+    return (this.isConnected ? this.superDelegates.auditEvent : this.localStore.auditEvent) as any
+  }
+
+  get lessonTranslation(): any {
+    return this.isConnected ? this.superDelegates.lessonTranslation : this.localStore.lessonTranslation
+  }
+
+  get glossaryEntry(): any {
+    return this.isConnected ? this.superDelegates.glossaryEntry : this.localStore.glossaryEntry
+  }
+
+  get lessonAudio(): any {
+    return this.isConnected ? this.superDelegates.lessonAudio : this.localStore.lessonAudio
+  }
+
+  get translationAudit(): any {
+    return this.isConnected ? this.superDelegates.translationAudit : this.localStore.translationAudit
   }
 
   override async $transaction(fnOrArray: any): Promise<any> {

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { useUIStore } from '@/store/uiStore'
+import { useI18n } from '@/lib/i18n'
 import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { useSyncEngine } from '@/hooks/useSyncEngine'
 import { getInitials } from '@/lib/utils'
@@ -12,49 +13,51 @@ import {
   RefreshCw, Settings, Bell, Search,
   ClipboardList, CheckSquare, Users, BarChart3,
   Sun, Moon, ChevronDown, WifiOff, GraduationCap, Compass,
-  Shield, UserCog, FileText, AlertTriangle
+  Shield, UserCog, FileText, AlertTriangle, Globe
 } from 'lucide-react'
 
 interface NavItem {
   to: string
   icon: any
-  label: string
+  labelKey: string
   hasDot?: boolean
   badge?: string
 }
 
 const STUDENT_NAV: NavItem[] = [
-  { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/courses',   icon: BookOpen,        label: 'My Courses' },
-  { to: '/progress',  icon: TrendingUp,      label: 'Progress' },
-  { to: '/quizzes',   icon: CheckSquare,     label: 'Assessments' },
-  { to: '/downloads', icon: Download,        label: 'Downloads' },
-  { to: '/sync',      icon: RefreshCw,       label: 'Sync Status', hasDot: true },
-  { to: '/settings',  icon: Settings,        label: 'Settings' },
+  { to: '/dashboard', icon: LayoutDashboard, labelKey: 'dashboard' },
+  { to: '/courses', icon: BookOpen, labelKey: 'myCourses' },
+  { to: '/progress', icon: TrendingUp, labelKey: 'progress' },
+  { to: '/quizzes', icon: CheckSquare, labelKey: 'assessments' },
+  { to: '/downloads', icon: Download, labelKey: 'downloads' },
+  { to: '/sync', icon: RefreshCw, labelKey: 'syncStatus', hasDot: true },
+  { to: '/settings', icon: Settings, labelKey: 'settings' },
 ]
 
 const TEACHER_NAV: NavItem[] = [
-  { to: '/teacher/dashboard',   icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/teacher/courses',     icon: BookOpen,        label: 'My Courses' },
-  { to: '/teacher/progress',    icon: Users,           label: 'Student Progress' },
-  { to: '/teacher/assessments', icon: ClipboardList,   label: 'Assessment Review' },
-  { to: '/teacher/sync',        icon: RefreshCw,       label: 'Sync Monitoring', hasDot: true },
-  { to: '/teacher/reports',     icon: BarChart3,       label: 'Reports & Analytics' },
-  { to: '/settings',            icon: Settings,        label: 'Settings' },
+  { to: '/teacher/dashboard', icon: LayoutDashboard, labelKey: 'teacherDashboard' },
+  { to: '/teacher/courses', icon: BookOpen, labelKey: 'myCourses' },
+  { to: '/teacher/progress', icon: Users, labelKey: 'studentProgress' },
+  { to: '/teacher/assessments', icon: ClipboardList, labelKey: 'assessmentReview' },
+  { to: '/teacher/sync', icon: RefreshCw, labelKey: 'syncMonitoring', hasDot: true },
+  { to: '/teacher/reports', icon: BarChart3, labelKey: 'reportsAnalytics' },
+  { to: '/teacher/translations', icon: Globe, labelKey: 'translationStudio' },
+  { to: '/settings', icon: Settings, labelKey: 'settings' },
 ]
 
 const ADMIN_NAV: NavItem[] = [
-  { to: '/admin',                  icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/admin/users',            icon: UserCog,         label: 'User Management' },
-  { to: '/admin/sync-monitor',     icon: AlertTriangle,   label: 'Sync Monitor' },
-  { to: '/admin/audit-logs',       icon: FileText,        label: 'Audit Logs' },
-  { to: '/admin/conflict-policies',icon: Shield,          label: 'Conflict Policies' },
-  { to: '/settings',               icon: Settings,        label: 'Settings' },
+  { to: '/admin', icon: LayoutDashboard, labelKey: 'adminDashboard' },
+  { to: '/admin/users', icon: UserCog, labelKey: 'userManagement' },
+  { to: '/admin/sync-monitor', icon: AlertTriangle, labelKey: 'syncMonitor' },
+  { to: '/admin/audit-logs', icon: FileText, labelKey: 'auditLogs' },
+  { to: '/admin/conflict-policies', icon: Shield, labelKey: 'conflictPolicies' },
+  { to: '/settings', icon: Settings, labelKey: 'settings' },
 ]
 
 export function AppLayout() {
   const { user, clearAuth } = useAuthStore()
   const { theme, setTheme } = useUIStore()
+  const { t } = useI18n()
   const isOnline = useOnlineStatus()
   const navigate = useNavigate()
   const [searchQuery, setSearchQuery] = useState('')
@@ -75,7 +78,7 @@ export function AppLayout() {
   }
 
   const isTeacher = user?.role === 'teacher'
-  const isAdmin   = user?.role === 'admin'
+  const isAdmin = user?.role === 'admin'
   const NAV_ITEMS = isAdmin ? ADMIN_NAV : isTeacher ? TEACHER_NAV : STUDENT_NAV
 
   return (
@@ -88,7 +91,7 @@ export function AppLayout() {
             <GraduationCap size={18} strokeWidth={2.2} />
           </div>
           <div>
-            <h1 className="text-slate-900 dark:text-slate-100 font-bold text-sm tracking-tight">LearnHub</h1>
+            <h1 className="text-slate-900 dark:text-slate-100 font-bold text-sm tracking-tight">{t('appName')}</h1>
           </div>
         </div>
 
@@ -96,11 +99,12 @@ export function AppLayout() {
         <nav className="flex-1 px-3 py-2 space-y-1">
           {NAV_ITEMS.map((item, idx) => {
             const Icon = item.icon
+            const label = t(item.labelKey)
             return (
               <NavLink
-                key={`${item.to}-${item.label}-${idx}`}
+                key={`${item.to}-${item.labelKey}-${idx}`}
                 to={item.to}
-                end={item.to === '/dashboard'}
+                end={item.to === '/dashboard' || item.to === '/teacher/dashboard' || item.to === '/admin'}
                 className={({ isActive }) => `
                   flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all
                   ${isActive
@@ -110,7 +114,7 @@ export function AppLayout() {
                 `}
               >
                 <Icon size={16} className="flex-shrink-0" />
-                <span className="flex-1 truncate">{item.label}</span>
+                <span className="flex-1 truncate">{label}</span>
 
                 {/* Green active dot for Sync Status */}
                 {item.hasDot && (
@@ -141,13 +145,13 @@ export function AppLayout() {
             <Compass size={18} strokeWidth={2.2} />
           </div>
           <p className="text-slate-900 dark:text-slate-100 font-bold text-xs mb-3">
-            {isAdmin ? 'System Control' : isTeacher ? 'Class Sync Status' : 'Keep Learning Anywhere!'}
+            {isAdmin ? t('systemControl') : isTeacher ? t('classSyncStatus') : t('keepLearningPromo')}
           </p>
           <button
             onClick={() => navigate(isAdmin ? '/admin/sync-monitor' : isTeacher ? '/teacher/sync' : '/downloads')}
             className="w-full py-2 px-3 rounded-lg bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-semibold shadow-xs transition-all"
           >
-            {isAdmin ? 'Sync Monitor' : isTeacher ? 'Sync Monitoring' : 'Go Offline'}
+            {isAdmin ? t('syncMonitor') : isTeacher ? t('syncMonitoring') : t('goOffline')}
           </button>
         </div>
 
@@ -161,12 +165,14 @@ export function AppLayout() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-slate-900 dark:text-slate-100 text-xs font-semibold truncate">{user?.name || 'Aarav Sharma'}</p>
-            <p className="text-slate-600 dark:text-slate-400 text-[10px] truncate capitalize">{user?.role || 'Student'}</p>
+            <p className="text-slate-600 dark:text-slate-400 text-[10px] truncate capitalize">
+              {user?.role === 'teacher' ? t('adminTeachers') : user?.role === 'admin' ? 'Admin' : t('student')}
+            </p>
           </div>
           <button
             onClick={handleLogout}
             className="p-1 text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 transition-colors"
-            title="Log out"
+            title={t('logOut')}
           >
             <ChevronDown size={14} />
           </button>
@@ -184,7 +190,7 @@ export function AppLayout() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search courses, topics..."
+              placeholder={t('searchPlaceholder')}
               className="w-full pl-9 pr-16 py-2 text-xs bg-[#F8FAFC] border border-[#D7E5F0] rounded-xl shadow-xs focus:outline-none focus:border-[#1B7FC9] focus:ring-1 focus:ring-[#1B7FC9] text-slate-800 placeholder:text-slate-400 transition-all"
             />
             <span className="absolute right-2.5 top-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md bg-white text-[10px] font-medium text-slate-500 border border-slate-200 select-none pointer-events-none">
@@ -196,7 +202,7 @@ export function AppLayout() {
           <div className="flex items-center gap-2.5">
             {!isOnline && (
               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">
-                <WifiOff size={12} /> Offline Mode
+                <WifiOff size={12} /> {t('offlineMode')}
               </span>
             )}
             {/* Notification Bell */}

@@ -12,6 +12,7 @@ import { getLocalLessonsForCourse, getLocalQuizzesForCourse } from '@/services/d
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 
 interface LessonItem {
   id: string
@@ -47,6 +48,7 @@ export function CourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>()
   const navigate = useNavigate()
   const isOnline = useOnlineStatus()
+  const { t, translateSubject, translateCourseTitle } = useI18n()
   const pack = useCoursePackStatus(courseId || '')
   const { startDownload, removeDownload, downloading } = useDownloadManager()
 
@@ -88,7 +90,7 @@ export function CourseDetailPage() {
               try {
                 const parsed = JSON.parse(q.contentJson)
                 version = parsed.version || 1
-              } catch {}
+              } catch { }
               return { id: q.id, title: q.title, version }
             })
           )
@@ -159,25 +161,25 @@ export function CourseDetailPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2 flex-wrap">
               <span className="bg-[#E1F0FA] text-[#1465A3] border border-[#CBE4F6] text-[11px] font-bold px-2.5 py-0.5 rounded-full">
-                {subject}
+                {translateSubject(subject)}
               </span>
               {isAvailable && (
                 <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                  <CheckCircle size={12} /> Available Offline
+                  <CheckCircle size={12} /> {t('offlineReady')}
                 </span>
               )}
             </div>
 
             <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3 truncate">
-              {title}
+              {translateCourseTitle(title)}
             </h1>
 
             <div className="flex items-center gap-4 text-xs font-semibold text-slate-500">
               <span className="inline-flex items-center gap-1">
-                <BookOpen size={14} className="text-[#1B7FC9]" /> {lessons.length} Chapters
+                <BookOpen size={14} className="text-[#1B7FC9]" /> {lessons.length} {t('lessons')}
               </span>
               <span className="inline-flex items-center gap-1">
-                <HelpCircle size={14} className="text-[#1B7FC9]" /> {quizzes.length} Quizzes
+                <HelpCircle size={14} className="text-[#1B7FC9]" /> {quizzes.length} {t('quizzes')}
               </span>
               <span className="inline-flex items-center gap-1">
                 <Download size={14} className="text-[#1B7FC9]" /> {course?.offlinePackageSizeMb || pack?.totalSizeMb || 10} MB
@@ -190,7 +192,7 @@ export function CourseDetailPage() {
             {isAvailable ? (
               <div className="flex items-center gap-2">
                 <span className="bg-[#E1F0FA] text-[#1465A3] border border-[#CBE4F6] py-2 px-3 text-xs font-bold rounded-xl shadow-xs">
-                  ✓ Downloaded
+                  ✓ {t('downloaded')}
                 </span>
                 <button
                   onClick={() => removeDownload(courseId!)}
@@ -205,14 +207,14 @@ export function CourseDetailPage() {
                 <div className="w-full bg-[#E8F2FA] h-2 rounded-full overflow-hidden border border-[#D7E5F0]">
                   <div className="h-full bg-[#1B7FC9] rounded-full transition-all" style={{ width: `${pct}%` }} />
                 </div>
-                <p className="text-xs text-center text-slate-500 font-medium">{pct}% downloading…</p>
+                <p className="text-xs text-center text-slate-500 font-medium">{pct}% {t('downloading')}</p>
               </div>
             ) : (
               <button
                 onClick={() => startDownload(course || { id: courseId, title, subject, offlinePackageSizeMb: 10 })}
                 className="bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-bold py-2.5 px-5 rounded-xl shadow-xs flex items-center gap-2 transition-all"
               >
-                <Download size={16} /> Download for Offline
+                <Download size={16} /> {t('download')}
               </button>
             )}
           </div>
@@ -222,9 +224,9 @@ export function CourseDetailPage() {
       {/* Tabs */}
       <div className="border-b border-[#D7E5F0] flex gap-6">
         {[
-          { key: 'chapters', label: `Chapters (${lessons.length})`, icon: BookOpen },
-          { key: 'quizzes',  label: `Quizzes (${quizzes.length})`,   icon: HelpCircle },
-          { key: 'about',    label: 'About Course',                  icon: FileText },
+          { key: 'chapters', label: `${t('lessons')} (${lessons.length})`, icon: BookOpen },
+          { key: 'quizzes', label: `${t('quizzes')} (${quizzes.length})`, icon: HelpCircle },
+          { key: 'about', label: 'About Course', icon: FileText },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}

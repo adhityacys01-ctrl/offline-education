@@ -176,4 +176,82 @@ export interface ApiErrorDto {
     message: string;
     correlationId?: string;
 }
+export type SupportedLanguage = 'en' | 'hi' | 'mr';
+export declare const LANGUAGE_LABELS: Record<SupportedLanguage, string>;
+export interface ImportPassageDto {
+    lessonId?: string;
+    sourceTitle: string;
+    rawText: string;
+    protectedTerms?: string[];
+}
+export interface GenerateTranslationDto {
+    lessonId: string;
+    sourceTitle: string;
+    sourceContent: string;
+    targetLanguages: SupportedLanguage[];
+    protectedTerms?: string[];
+}
+export interface ValidationTokenStatusDto {
+    original: string;
+    found: boolean;
+    count: number;
+    expected: number;
+}
+export interface ValidationResultDto {
+    passed: boolean;
+    warnings: string[];
+    errors: string[];
+    preservedTokens: ValidationTokenStatusDto[];
+}
+export interface LessonTranslationDto {
+    id: string;
+    lessonId: string;
+    sourceVersion: number;
+    language: SupportedLanguage;
+    translatedTitle: string;
+    translatedContent: string;
+    revision: number;
+    validationStatus: 'PENDING' | 'PASSED' | 'FAILED' | 'WARNINGS';
+    validationReport?: ValidationResultDto;
+    approvalStatus: 'DRAFT' | 'GENERATED' | 'VALIDATED' | 'REVIEW' | 'APPROVED' | 'PUBLISHED';
+    approverId?: string | null;
+    publishedAt?: string | null;
+    createdAt?: string;
+    updatedAt?: string;
+}
+export interface GlossaryEntryDto {
+    id: string;
+    translationId: string;
+    lessonId: string;
+    term: string;
+    enDef: string;
+    hiDef?: string | null;
+    mrDef?: string | null;
+    enEquiv?: string | null;
+    hiEquiv?: string | null;
+    mrEquiv?: string | null;
+    approvalStatus: string;
+    revision: number;
+}
+export interface LessonAudioDto {
+    id: string;
+    translationId: string;
+    language: SupportedLanguage;
+    revision: number;
+    fileRef?: string | null;
+    durationSeconds?: number | null;
+    sizeBytes?: number | null;
+    generationStatus: 'PENDING' | 'GENERATING' | 'READY' | 'FAILED';
+    ttsLangCode?: string;
+}
+export interface TranslationAuditDto {
+    id: string;
+    translationId: string;
+    actorId: string;
+    action: string;
+    prevRevision?: number | null;
+    newRevision: number;
+    metadata?: unknown;
+    createdAt: string;
+}
 //# sourceMappingURL=index.d.ts.map

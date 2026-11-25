@@ -1,0 +1,634 @@
+import { create } from 'zustand'
+
+export type SupportedLanguage = 'en' | 'hi' | 'mr'
+
+export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
+  en: 'English',
+  hi: 'हिन्दी',
+  mr: 'मराठी',
+}
+
+export const LANG_STORAGE_KEY = 'learnhub_preferred_lang'
+
+function getInitialLanguage(): SupportedLanguage {
+  if (typeof window !== 'undefined') {
+    const saved = localStorage.getItem(LANG_STORAGE_KEY) as SupportedLanguage | null
+    if (saved === 'en' || saved === 'hi' || saved === 'mr') return saved
+  }
+  return 'en'
+}
+
+interface LanguageStoreState {
+  language: SupportedLanguage
+  setLanguage: (lang: SupportedLanguage) => void
+}
+
+export const useLanguageStore = create<LanguageStoreState>((set) => ({
+  language: getInitialLanguage(),
+  setLanguage: (lang: SupportedLanguage) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LANG_STORAGE_KEY, lang)
+      window.dispatchEvent(new CustomEvent('learnhub_lang_change', { detail: lang }))
+    }
+    set({ language: lang })
+  },
+}))
+
+export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
+  en: {
+    // ── App Brand & Header ───────────────────────────────────────────
+    appName: 'LearnHub',
+    searchPlaceholder: 'Search courses, topics...',
+    goOffline: 'Go Offline',
+    goOnline: 'Go Online',
+    online: 'Online',
+    offlineMode: 'Offline Mode',
+    profile: 'Profile',
+    logOut: 'Log Out',
+    changePassword: 'Change Password',
+    editProfile: 'Edit Profile',
+    account: 'Account',
+    appPreferences: 'App Preferences',
+    storageUsage: 'Storage Usage',
+    usedOfStorage: '1.2 GB used of 5 GB available',
+    learningLanguage: 'Learning Language',
+    apply: 'Apply',
+    appliedSuccess: 'Language applied successfully',
+
+    // ── Navigation ───────────────────────────────────────────────────
+    dashboard: 'Dashboard',
+    myCourses: 'My Courses',
+    progress: 'Progress',
+    assessments: 'Assessments',
+    downloads: 'Downloads',
+    syncStatus: 'Sync Status',
+    settings: 'Settings',
+
+    // Teacher Nav
+    teacherDashboard: 'Dashboard',
+    studentProgress: 'Student Progress',
+    assessmentReview: 'Assessment Review',
+    syncMonitoring: 'Sync Monitoring',
+    reportsAnalytics: 'Reports & Analytics',
+    translationStudio: 'Translation Studio',
+
+    // Admin Nav
+    adminDashboard: 'Dashboard',
+    userManagement: 'User Management',
+    syncMonitor: 'Sync Monitor',
+    auditLogs: 'Audit Logs',
+    conflictPolicies: 'Conflict Policies',
+
+    // Promo Card
+    keepLearningPromo: 'Keep Learning Anywhere!',
+    classSyncStatus: 'Class Sync Status',
+    systemControl: 'System Control',
+
+    // ── Student Dashboard ────────────────────────────────────────────
+    goodMorning: 'Good Morning',
+    goodAfternoon: 'Good Afternoon',
+    goodEvening: 'Good Evening',
+    semesterTrack: 'Semester Track',
+    activeSynced: 'Active & Synced',
+    quickActions: 'Quick Actions',
+    continueLearning: 'Continue Learning',
+    takeQuiz: 'Take a Quiz',
+    downloadContent: 'Download Content',
+    completedLessons: 'Completed Lessons',
+    averageScore: 'Average Score',
+    pendingSync: 'Pending Sync',
+    thisMonthPlus: '+1 this month',
+    onTrack: 'On track',
+    passingGrade: 'Passing grade',
+    allSynced: 'All synchronized',
+    courseProgress: 'Course Progress',
+    recentActivity: 'Recent Activity',
+    viewCourse: 'View Course',
+    startLesson: 'Start Lesson',
+
+    // ── Teacher Dashboard ────────────────────────────────────────────
+    teacherDashboardTitle: 'Teacher Dashboard',
+    coursesCountLabel: 'Courses',
+    studentsCountLabel: 'Students',
+    submissionsCountLabel: 'Submissions',
+    pendingReviewCountLabel: 'Pending Review',
+    coursePerformance: 'Course Performance',
+    thisMonth: 'This Month',
+    lastMonth: 'Last Month',
+    assignedCourses: 'Assigned Courses',
+    viewAll: 'View All',
+    viewDetails: 'View Details',
+    newSubmission: 'New submission',
+    feedbackAdded: 'Feedback added',
+    quizCompletedActivity: 'Quiz completed',
+    minAgo: 'min ago',
+    createCourse: 'Create Course',
+    allCourses: 'All Courses',
+    last30Days: 'Last 30 Days',
+    student: 'Student',
+    course: 'Course',
+    grade: 'Grade',
+    status: 'Status',
+    action: 'Action',
+    exportReport: 'Export Report',
+    downloadCsv: 'Download CSV',
+
+    // ── Admin Dashboard ──────────────────────────────────────────────
+    adminDashboardTitle: 'Admin Dashboard',
+    totalStudents: 'Students',
+    totalTeachers: 'Teachers',
+    syncRecords: 'Sync Records',
+    auditEvents: 'Audit Events',
+    rbacMatrix: 'RBAC Permission Matrix',
+    permission: 'Permission',
+    allowed: 'Allowed',
+    restricted: 'Restricted',
+    ownOnly: 'Own or assigned resources only',
+
+    // ── Courses & Lessons ────────────────────────────────────────────
+    coursesTitle: 'My Courses',
+    allSubjects: 'All Subjects',
+    lessons: 'Lessons',
+    quizzes: 'Quizzes',
+    download: 'Download',
+    downloaded: 'Downloaded',
+    downloading: 'Downloading...',
+    offlineReady: 'Offline Ready',
+    markCompleted: 'Mark as Completed',
+    completed: 'Completed',
+    inProgress: 'In Progress',
+    keyPoints: 'Key Concepts & Summary',
+    notes: 'Notes',
+    listenAudio: 'Listen to Audio',
+    nextLesson: 'Next Lesson',
+    prevLesson: 'Previous Lesson',
+    formulaBoxTitle: 'Formula',
+
+    // ── Quizzes & Assessments ────────────────────────────────────────
+    quizzesTitle: 'Quizzes & Assessments',
+    interactiveQuizzes: 'Interactive Knowledge Quizzes',
+    quizzesAvailable: 'Quizzes Available',
+    startAssessment: 'Start Assessment',
+    retakeQuiz: 'Retake Quiz',
+    questionCount: 'Questions',
+    timeLimitMins: 'mins',
+    question: 'Question',
+    of: 'of',
+    clearAnswer: 'Clear Answer',
+    previous: 'Previous',
+    next: 'Next',
+    submitAssessment: 'Submit Assessment',
+    submitting: 'Submitting...',
+    savedOnDevice: 'Saved on this device',
+    saving: 'Saving...',
+    saveFailed: 'Save failed — retrying',
+    quizCompleted: 'Quiz Completed',
+    quizCompletedHeading: 'You have successfully completed the quiz!',
+    yourScore: 'Your Score',
+    passed: 'Passed',
+    reviewNeeded: 'Review Needed',
+    backToCourse: 'Back to Course',
+    viewAllQuizzes: 'View All Quizzes',
+    goToDashboard: 'Go to Dashboard',
+    previouslySubmitted: 'You previously submitted this quiz.',
+    optionsLocked: 'Options are locked. Click "Retake Quiz" anytime to practice again!',
+
+    // ── Downloads & Sync ─────────────────────────────────────────────
+    downloadsTitle: 'Download Manager',
+    syncTitle: 'Sync Center',
+    syncNow: 'Sync Now',
+    retryAll: 'Retry Failed',
+    pending: 'Pending',
+    synchronized: 'Synchronized',
+    failed: 'Failed',
+    wifiOnly: 'Download on Wi-Fi Only',
+    autoSync: 'Auto Sync When Online',
+    darkMode: 'Dark Mode',
+    lessonProgressSynced: 'Lesson Progress Synced',
+    submittingQuiz: 'Submitting Quiz...',
+    pendingSubmissions: 'Pending Submissions',
+    failedToSync: 'Failed to Sync',
+    retry: 'Retry',
+    retrying: 'Retrying…',
+    syncReassurance: "Don't worry! Your data is safe and will retry automatically.",
+    retryInitiated: 'Retry initiated. All pending records are queued for transmission.',
+  },
+
+  hi: {
+    // ── App Brand & Header ───────────────────────────────────────────
+    appName: 'लर्नहब',
+    searchPlaceholder: 'कोर्स, विषय खोजें...',
+    goOffline: 'ऑफलाइन जाएं',
+    goOnline: 'ऑनलाइन जाएं',
+    online: 'ऑनलाइन',
+    offlineMode: 'ऑफलाइन मोड',
+    profile: 'प्रोफ़ाइल',
+    logOut: 'लॉग आउट',
+    changePassword: 'पासवर्ड बदलें',
+    editProfile: 'प्रोफ़ाइल संपादित करें',
+    account: 'खाता',
+    appPreferences: 'ऐप प्राथमिकताएं',
+    storageUsage: 'स्टोरेज उपयोग',
+    usedOfStorage: '5 GB में से 1.2 GB प्रयुक्त',
+    learningLanguage: 'सीखने की भाषा',
+    apply: 'लागू करें',
+    appliedSuccess: 'भाषा सफलतापूर्वक लागू की गई',
+
+    // ── Navigation ───────────────────────────────────────────────────
+    dashboard: 'डैशबोर्ड',
+    myCourses: 'मेरे पाठ्यक्रम',
+    progress: 'प्रगति',
+    assessments: 'मूल्यांकन',
+    downloads: 'डाउनलोड',
+    syncStatus: 'सिंक स्थिति',
+    settings: 'सेटिंग्स',
+
+    // Teacher Nav
+    teacherDashboard: 'डैशबोर्ड',
+    studentProgress: 'छात्र प्रगति',
+    assessmentReview: 'मूल्यांकन समीक्षा',
+    syncMonitoring: 'सिंक निगरानी',
+    reportsAnalytics: 'रिपोर्ट्स और विश्लेषण',
+    translationStudio: 'अनुवाद स्टूडियो',
+
+    // Admin Nav
+    adminDashboard: 'डैशबोर्ड',
+    userManagement: 'उपयोगकर्ता प्रबंधन',
+    syncMonitor: 'सिंक मॉनिटर',
+    auditLogs: 'ऑडिट लॉग',
+    conflictPolicies: 'विवाद नीतियां',
+
+    // Promo Card
+    keepLearningPromo: 'कहीं भी सीखते रहें!',
+    classSyncStatus: 'कक्षा सिंक स्थिति',
+    systemControl: 'सिस्टम नियंत्रण',
+
+    // ── Student Dashboard ────────────────────────────────────────────
+    goodMorning: 'शुभ प्रभात',
+    goodAfternoon: 'शुभ दोपहर',
+    goodEvening: 'शुभ संध्या',
+    semesterTrack: 'सत्र ट्रैक',
+    activeSynced: 'सक्रिय और सिंक',
+    quickActions: 'त्वरित क्रियाएँ',
+    continueLearning: 'पढ़ाई जारी रखें',
+    takeQuiz: 'क्विज़ दें',
+    downloadContent: 'सामग्री डाउनलोड करें',
+    completedLessons: 'पूर्ण पाठ',
+    averageScore: 'औसत अंक',
+    pendingSync: 'लंबित सिंक',
+    thisMonthPlus: '+1 इस महीने',
+    onTrack: 'सही गति पर',
+    passingGrade: 'उत्तीर्ण स्तर',
+    allSynced: 'सभी सिंक किए गए',
+    courseProgress: 'कोर्स प्रगति',
+    recentActivity: 'हालिया गतिविधि',
+    viewCourse: 'कोर्स देखें',
+    startLesson: 'पाठ शुरू करें',
+
+    // ── Teacher Dashboard ────────────────────────────────────────────
+    teacherDashboardTitle: 'शिक्षक डैशबोर्ड',
+    coursesCountLabel: 'कोर्स',
+    studentsCountLabel: 'छात्र',
+    submissionsCountLabel: 'सबमिशन',
+    pendingReviewCountLabel: 'समीक्षा लंबित',
+    coursePerformance: 'कोर्स प्रदर्शन',
+    thisMonth: 'इस महीने',
+    lastMonth: 'पिछले महीने',
+    assignedCourses: 'आवंटित कोर्स',
+    viewAll: 'सभी देखें',
+    viewDetails: 'विवरण देखें',
+    newSubmission: 'नया सबमिशन',
+    feedbackAdded: 'प्रतिक्रिया जोड़ी गई',
+    quizCompletedActivity: 'क्विज़ पूरा हुआ',
+    minAgo: 'मिनट पहले',
+    createCourse: 'कोर्स बनाएं',
+    allCourses: 'सभी कोर्स',
+    last30Days: 'पिछले 30 दिन',
+    student: 'छात्र',
+    course: 'कोर्स',
+    grade: 'कक्षा',
+    status: 'स्थिति',
+    action: 'कार्रवाई',
+    exportReport: 'रिपोर्ट निर्यात करें',
+    downloadCsv: 'CSV डाउनलोड करें',
+
+    // ── Admin Dashboard ──────────────────────────────────────────────
+    adminDashboardTitle: 'व्यवस्थापक डैशबोर्ड',
+    totalStudents: 'छात्र',
+    totalTeachers: 'शिक्षक',
+    syncRecords: 'सिंक रिकॉर्ड',
+    auditEvents: 'ऑडिट इवेंट',
+    rbacMatrix: 'RBAC अनुमति मैट्रिक्स',
+    permission: 'अनुमति',
+    allowed: 'अनुमति प्राप्त',
+    restricted: 'प्रतिबंधित',
+    ownOnly: 'केवल अपने या सौंपे गए संसाधन',
+
+    // ── Courses & Lessons ────────────────────────────────────────────
+    coursesTitle: 'मेरे पाठ्यक्रम',
+    allSubjects: 'सभी विषय',
+    lessons: 'पाठ',
+    quizzes: 'क्विज़',
+    download: 'डाउनलोड',
+    downloaded: 'डाउनलोड हो गया',
+    downloading: 'डाउनलोड हो रहा है...',
+    offlineReady: 'ऑफलाइन तैयार',
+    markCompleted: 'पूर्ण के रूप में चिह्नित करें',
+    completed: 'पूर्ण',
+    inProgress: 'प्रगति पर',
+    keyPoints: 'मुख्य बिंदु और सारांश',
+    notes: 'नोट्स',
+    listenAudio: 'ऑडियो सुनें',
+    nextLesson: 'अगला पाठ',
+    prevLesson: 'पिछला पाठ',
+    formulaBoxTitle: 'सूत्र',
+
+    // ── Quizzes & Assessments ────────────────────────────────────────
+    quizzesTitle: 'क्विज़ और मूल्यांकन',
+    interactiveQuizzes: 'इंटरैक्टिव ज्ञान क्विज़',
+    quizzesAvailable: 'क्विज़ उपलब्ध',
+    startAssessment: 'मूल्यांकन शुरू करें',
+    retakeQuiz: 'पुनः क्विज़ दें',
+    questionCount: 'प्रश्न',
+    timeLimitMins: 'मिनट',
+    question: 'प्रश्न',
+    of: 'का',
+    clearAnswer: 'उत्तर साफ़ करें',
+    previous: 'पिछला',
+    next: 'अगला',
+    submitAssessment: 'मूल्यांकन जमा करें',
+    submitting: 'जमा हो रहा है...',
+    savedOnDevice: 'इस डिवाइस पर सहेजा गया',
+    saving: 'सहेज रहा है...',
+    saveFailed: 'सहेजना विफल — पुनः प्रयास',
+    quizCompleted: 'क्विज़ पूरा हुआ',
+    quizCompletedHeading: 'आपने सफलतापूर्वक क्विज़ पूरा कर लिया है!',
+    yourScore: 'आपका स्कोर',
+    passed: 'उत्तीर्ण',
+    reviewNeeded: 'समीक्षा आवश्यक',
+    backToCourse: 'कोर्स पर वापस जाएं',
+    viewAllQuizzes: 'सभी क्विज़ देखें',
+    goToDashboard: 'डैशबोर्ड पर जाएं',
+    previouslySubmitted: 'आपने पहले यह क्विज़ जमा किया था।',
+    optionsLocked: 'विकल्प लॉक हैं। फिर से अभ्यास करने के लिए कभी भी "पुनः क्विज़ दें" पर क्लिक करें!',
+
+    // ── Downloads & Sync ─────────────────────────────────────────────
+    downloadsTitle: 'डाउनलोड प्रबंधक',
+    syncTitle: 'सिंक केंद्र',
+    syncNow: 'अभी सिंक करें',
+    retryAll: 'विफल पुनः प्रयास करें',
+    pending: 'लंबित',
+    synchronized: 'सिंक किया गया',
+    failed: 'विफल',
+    wifiOnly: 'केवल वाई-फाई पर डाउनलोड करें',
+    autoSync: 'ऑनलाइन होने पर ऑटो-सिंक करें',
+    darkMode: 'डार्क मोड',
+    lessonProgressSynced: 'पाठ प्रगति सिंक हुई',
+    submittingQuiz: 'क्विज़ सबमिट हो रही है...',
+    pendingSubmissions: 'लंबित सबमिशन',
+    failedToSync: 'सिंक विफल रहा',
+    retry: 'पुनः प्रयास करें',
+    retrying: 'पुनः प्रयास जारी...',
+    syncReassurance: 'चिंता न करें! आपका डेटा सुरक्षित है और स्वतः पुनः प्रयास करेगा।',
+    retryInitiated: 'पुनः प्रयास शुरू हुआ। सभी लंबित रिकॉर्ड कतारबद्ध हैं।',
+  },
+
+  mr: {
+    // ── App Brand & Header ───────────────────────────────────────────
+    appName: 'लर्नहब',
+    searchPlaceholder: 'अभ्यासक्रम, विषय शोधा...',
+    goOffline: 'ऑफलाइन जा',
+    goOnline: 'ऑनलाइन जा',
+    online: 'ऑनलाइन',
+    offlineMode: 'ऑफलाइन मोड',
+    profile: 'प्रोफाइल',
+    logOut: 'लॉग आउट',
+    changePassword: 'पासवर्ड बदला',
+    editProfile: 'प्रोफाइल संपादित करा',
+    account: 'खाते',
+    appPreferences: 'अॅप प्राधान्ये',
+    storageUsage: 'स्टोरेज वापर',
+    usedOfStorage: '५ GB पैकी १.२ GB वापरले',
+    learningLanguage: 'शिक्षणाची भाषा',
+    apply: 'लागू करा',
+    appliedSuccess: 'भाषा यशस्वीरित्या लागू केली',
+
+    // ── Navigation ───────────────────────────────────────────────────
+    dashboard: 'डॅशबोर्ड',
+    myCourses: 'माझे अभ्यासक्रम',
+    progress: 'प्रगती',
+    assessments: 'मूल्यमापन',
+    downloads: 'डाउनलोड',
+    syncStatus: 'सिंक स्थिती',
+    settings: 'सेटिंग्ज',
+
+    // Teacher Nav
+    teacherDashboard: 'डॅशबोर्ड',
+    studentProgress: 'विद्यार्थी प्रगती',
+    assessmentReview: 'मूल्यमापन पुनरावलोकन',
+    syncMonitoring: 'सिंक देखरेख',
+    reportsAnalytics: 'अहवाल आणि विश्लेषण',
+    translationStudio: 'भाषांतर स्टुडिओ',
+
+    // Admin Nav
+    adminDashboard: 'डॅशबोर्ड',
+    userManagement: 'वापरकर्ता व्यवस्थापन',
+    syncMonitor: 'सिंक मॉनिटर',
+    auditLogs: 'ऑडिट नोंदी',
+    conflictPolicies: 'संघर्ष धोरणे',
+
+    // Promo Card
+    keepLearningPromo: 'कुठेही शिकत राहा!',
+    classSyncStatus: 'वर्ग सिंक स्थिती',
+    systemControl: 'प्रणाली नियंत्रण',
+
+    // ── Student Dashboard ────────────────────────────────────────────
+    goodMorning: 'शुभ सकाळ',
+    goodAfternoon: 'शुभ दुपार',
+    goodEvening: 'शुभ संध्याकाळ',
+    semesterTrack: 'सत्र ट्रॅक',
+    activeSynced: 'सक्रिय आणि सिंक',
+    quickActions: 'जलद कृती',
+    continueLearning: 'शिकणे चालू ठेवा',
+    takeQuiz: 'क्विझ द्या',
+    downloadContent: 'सामग्री डाउनलोड करा',
+    completedLessons: 'पूर्ण झालेले धडे',
+    averageScore: 'सरासरी गुण',
+    pendingSync: 'प्रलंबित सिंक',
+    thisMonthPlus: '+1 या महिन्यात',
+    onTrack: 'योग्य गतीने',
+    passingGrade: 'उत्तीर्ण पातळी',
+    allSynced: 'सर्व सिंक झाले',
+    courseProgress: 'अभ्यासक्रम प्रगती',
+    recentActivity: 'अलीकडील हालचाली',
+    viewCourse: 'अभ्यासक्रम पहा',
+    startLesson: 'धडा सुरू करा',
+
+    // ── Teacher Dashboard ────────────────────────────────────────────
+    teacherDashboardTitle: 'शिक्षक डॅशबोर्ड',
+    coursesCountLabel: 'अभ्यासक्रम',
+    studentsCountLabel: 'विद्यार्थी',
+    submissionsCountLabel: 'सादरीकरणे',
+    pendingReviewCountLabel: 'पुनरावलोकन प्रलंबित',
+    coursePerformance: 'अभ्यासक्रम कामगिरी',
+    thisMonth: 'या महिन्यात',
+    lastMonth: 'मागील महिन्यात',
+    assignedCourses: 'वाटप केलेले अभ्यासक्रम',
+    viewAll: 'सर्व पहा',
+    viewDetails: 'तपशील पहा',
+    newSubmission: 'नवीन सादरीकरण',
+    feedbackAdded: 'अभिप्राय जोडला',
+    quizCompletedActivity: 'क्विझ पूर्ण झाले',
+    minAgo: 'मिनिटांपूर्वी',
+    createCourse: 'नवीन अभ्यासक्रम तयार करा',
+    allCourses: 'सर्व अभ्यासक्रम',
+    last30Days: 'मागील ३० दिवस',
+    student: 'विद्यार्थी',
+    course: 'अभ्यासक्रम',
+    grade: 'इयत्ता',
+    status: 'स्थिती',
+    action: 'कृती',
+    exportReport: 'अहवाल निर्यात करा',
+    downloadCsv: 'CSV डाउनलोड करा',
+
+    // ── Admin Dashboard ──────────────────────────────────────────────
+    adminDashboardTitle: 'प्रशासक डॅशबोर्ड',
+    totalStudents: 'विद्यार्थी',
+    totalTeachers: 'शिक्षक',
+    syncRecords: 'सिंक नोंदी',
+    auditEvents: 'ऑडिट घटना',
+    rbacMatrix: 'RBAC परवानगी मॅट्रिक्स',
+    permission: 'परवानगी',
+    allowed: 'अनुमती दिलेली',
+    restricted: 'प्रतिबंधित',
+    ownOnly: 'केवळ स्वतःचे किंवा वाटप केलेले घटक',
+
+    // ── Courses & Lessons ────────────────────────────────────────────
+    coursesTitle: 'माझे अभ्यासक्रम',
+    allSubjects: 'सर्व विषय',
+    lessons: 'धडे',
+    quizzes: 'क्विझ',
+    download: 'डाउनलोड',
+    downloaded: 'डाउनलोड झाले',
+    downloading: 'डाउनलोड होत आहे...',
+    offlineReady: 'ऑफलाइन तयार',
+    markCompleted: 'पूर्ण म्हणून चिन्हांकित करा',
+    completed: 'पूर्ण',
+    inProgress: 'प्रगतीपथावर',
+    keyPoints: 'मुख्य संकल्पना आणि सारांश',
+    notes: 'नोंदी',
+    listenAudio: 'ऑडिओ ऐका',
+    nextLesson: 'पुढील धडा',
+    prevLesson: 'मागील धडा',
+    formulaBoxTitle: 'सूत्र',
+
+    // ── Quizzes & Assessments ────────────────────────────────────────
+    quizzesTitle: 'क्विझ आणि मूल्यमापन',
+    interactiveQuizzes: 'परस्परसंवादी ज्ञान क्विझ',
+    quizzesAvailable: 'क्विझ उपलब्ध',
+    startAssessment: 'मूल्यमापन सुरू करा',
+    retakeQuiz: 'पुन्हा क्विझ द्या',
+    questionCount: 'प्रश्न',
+    timeLimitMins: 'मिनिटे',
+    question: 'प्रश्न',
+    of: 'पैकी',
+    clearAnswer: 'उत्तर पुसा',
+    previous: 'मागील',
+    next: 'पुढील',
+    submitAssessment: 'मूल्यमापन सादर करा',
+    submitting: 'सादर होत आहे...',
+    savedOnDevice: 'या डिव्हाइसवर जतन केले',
+    saving: 'जतन होत आहे...',
+    saveFailed: 'जतन अयशस्वी — पुन्हा प्रयत्न करत आहे',
+    quizCompleted: 'क्विझ पूर्ण झाले',
+    quizCompletedHeading: 'तुम्ही यशस्वीरित्या क्विझ पूर्ण केली आहे!',
+    yourScore: 'तुमचे गुण',
+    passed: 'उत्तीर्ण',
+    reviewNeeded: 'पुनरावलोकन आवश्यक',
+    backToCourse: 'अभ्यासक्रमावर परत जा',
+    viewAllQuizzes: 'सर्व क्विझ पहा',
+    goToDashboard: 'डॅशबोर्डवर जा',
+    previouslySubmitted: 'तुम्ही यापूर्वी ही क्विझ सादर केली होती.',
+    optionsLocked: 'पर्याय लॉक केले आहेत. पुन्हा सराव करण्यासाठी कधीही "पुन्हा क्विझ द्या" वर क्लिक करा!',
+
+    // ── Downloads & Sync ─────────────────────────────────────────────
+    downloadsTitle: 'डाउनलोड व्यवस्थापक',
+    syncTitle: 'सिंक केंद्र',
+    syncNow: 'आता सिंक करा',
+    retryAll: 'अयशस्वी पुन्हा प्रयत्न करा',
+    pending: 'प्रलंबित',
+    synchronized: 'सिंक झाले',
+    failed: 'अयशस्वी',
+    wifiOnly: 'केवळ वाय-फाय वर डाउनलोड करा',
+    autoSync: 'ऑनलाइन झाल्यावर ऑटो-सिंक करा',
+    darkMode: 'डार्क मोड',
+    lessonProgressSynced: 'धडा प्रगती सिंक झाली',
+    submittingQuiz: 'क्विझ सबमिट होत आहे...',
+    pendingSubmissions: 'प्रलंबित सबमिशन',
+    failedToSync: 'सिंक अयशस्वी झाले',
+    retry: 'पुन्हा प्रयत्न करा',
+    retrying: 'पुन्हा प्रयत्न करत आहे...',
+    syncReassurance: 'काळजी करू नका! तुमचा डेटा सुरक्षित आहे आणि आपोआप पुन्हा प्रयत्न केला जाईल.',
+    retryInitiated: 'पुन्हा प्रयत्न सुरू केला. सर्व प्रलंबित नोंदी रांगेत आहेत.',
+  },
+}
+
+export const SUBJECT_TRANSLATIONS: Record<string, Record<SupportedLanguage, string>> = {
+  'Physics': { en: 'Physics', hi: 'भौतिक विज्ञान', mr: 'भौतिकशास्त्र' },
+  'Mathematics': { en: 'Mathematics', hi: 'गणित', mr: 'गणित' },
+  'Chemistry': { en: 'Chemistry', hi: 'रसायन विज्ञान', mr: 'रसायनशास्त्र' },
+  'Biology': { en: 'Biology', hi: 'जीव विज्ञान', mr: 'जीवशास्त्र' },
+  'History': { en: 'History of India', hi: 'भारत का इतिहास', mr: 'भारताचा इतिहास' },
+  'Computer Science': { en: 'Computer Science', hi: 'कंप्यूटर विज्ञान', mr: 'संगणक शास्त्र' },
+  'Environmental Science': { en: 'Environmental Science', hi: 'पर्यावरण विज्ञान', mr: 'पर्यावरण शास्त्र' },
+}
+
+export const COURSE_TITLES: Record<string, Record<SupportedLanguage, string>> = {
+  'seed-course-physics': { en: 'Physics', hi: 'भौतिक विज्ञान', mr: 'भौतिकशास्त्र' },
+  'seed-course-mathematics': { en: 'Mathematics', hi: 'गणित', mr: 'गणित' },
+  'seed-course-chemistry': { en: 'Chemistry', hi: 'रसायन विज्ञान', mr: 'रसायनशास्त्र' },
+  'seed-course-biology': { en: 'Biology', hi: 'जीव विज्ञान', mr: 'जीवशास्त्र' },
+  'seed-course-history': { en: 'History of India', hi: 'भारत का इतिहास', mr: 'भारताचा इतिहास' },
+  'seed-course-computer-science': { en: 'Computer Science', hi: 'कंप्यूटर विज्ञान', mr: 'संगणक शास्त्र' },
+}
+
+export function useI18n() {
+  const language = useLanguageStore((s) => s.language)
+  const setLanguage = useLanguageStore((s) => s.setLanguage)
+
+  const t = (key: string, fallback?: string): string => {
+    const langDict = TRANSLATIONS[language] || TRANSLATIONS.en
+    if (langDict && langDict[key]) return langDict[key]
+    const enDict = TRANSLATIONS.en
+    if (enDict && enDict[key]) return enDict[key]
+    return fallback || key
+  }
+
+  const translateSubject = (subject: string): string => {
+    if (SUBJECT_TRANSLATIONS[subject]?.[language]) {
+      return SUBJECT_TRANSLATIONS[subject][language]
+    }
+    return subject
+  }
+
+  const translateCourseTitle = (courseIdOrTitle: string, defaultTitle?: string): string => {
+    if (COURSE_TITLES[courseIdOrTitle]?.[language]) {
+      return COURSE_TITLES[courseIdOrTitle][language]
+    }
+    // Also check if courseIdOrTitle matches a subject
+    for (const [key, map] of Object.entries(SUBJECT_TRANSLATIONS)) {
+      if (courseIdOrTitle.toLowerCase().includes(key.toLowerCase())) {
+        return map[language] || defaultTitle || courseIdOrTitle
+      }
+    }
+    return defaultTitle || courseIdOrTitle
+  }
+
+  return {
+    language,
+    setLanguage,
+    t,
+    translateSubject,
+    translateCourseTitle,
+  }
+}

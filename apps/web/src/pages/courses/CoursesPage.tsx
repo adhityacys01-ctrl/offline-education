@@ -8,6 +8,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus'
 import { useLiveQuery } from 'dexie-react-hooks'
 import { db } from '@/db/database'
 import { cn } from '@/lib/utils'
+import { useI18n } from '@/lib/i18n'
 
 interface CourseMeta {
   id: string
@@ -102,6 +103,7 @@ function CourseCard({
   onDelete: () => void
 }) {
   const navigate = useNavigate()
+  const { t, translateCourseTitle } = useI18n()
   const pack = useCoursePackStatus(course.id)
   const isAvailable = pack?.status === 'AVAILABLE_OFFLINE'
   const isDownloading = downloading !== undefined || pack?.status === 'DOWNLOADING'
@@ -113,7 +115,7 @@ function CourseCard({
     []
   )
   const completedCount = progressItems.filter((p) => p.completed).length
-  const dynamicPct = completedCount > 0 
+  const dynamicPct = completedCount > 0
     ? Math.min(100, Math.round((completedCount / (course.lessonCount || 10)) * 100))
     : course.progress
 
@@ -141,14 +143,14 @@ function CourseCard({
           {/* Offline Ready Badge overlay */}
           {isAvailable && (
             <div className="absolute top-2.5 right-2.5 bg-[#E1F0FA] text-[#1465A3] border border-[#CBE4F6] text-[11px] font-bold px-2.5 py-1 rounded-full flex items-center gap-1 shadow-xs">
-              <CheckCircle2 size={12} strokeWidth={2.5} /> Ready Offline
+              <CheckCircle2 size={12} strokeWidth={2.5} /> {t('offlineReady')}
             </div>
           )}
         </div>
 
         {/* Title & Chapter Subtitle */}
         <h3 className="text-base font-bold text-slate-900 group-hover:text-[#1B7FC9] transition-colors tracking-tight">
-          {course.title}
+          {translateCourseTitle(course.title)}
         </h3>
         <p className="text-xs text-slate-500 font-medium mt-0.5 mb-3.5">
           {course.chapter}
@@ -201,7 +203,7 @@ function CourseCard({
           onClick={() => navigate(`/courses/${course.id}`)}
           className="bg-[#1B7FC9] hover:bg-[#1465A3] active:scale-[0.98] text-white text-xs font-bold py-2.5 px-5 rounded-xl flex items-center gap-1.5 shadow-xs transition-all"
         >
-          Continue Learning <ArrowRight size={13} />
+          {t('continueLearning')} <ArrowRight size={13} />
         </button>
       </div>
     </div>
@@ -210,6 +212,7 @@ function CourseCard({
 
 export function CoursesPage() {
   const isOnline = useOnlineStatus()
+  const { t, translateSubject } = useI18n()
   const [selectedFilter, setSelectedFilter] = useState('All Courses')
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const { startDownload, removeDownload, downloading } = useDownloadManager()
@@ -249,7 +252,7 @@ export function CoursesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
-            My Courses
+            {t('coursesTitle')}
           </h1>
         </div>
 
@@ -259,7 +262,7 @@ export function CoursesPage() {
             onClick={() => setDropdownOpen(!dropdownOpen)}
             className="bg-white border border-[#D7E5F0] shadow-xs hover:border-[#1B7FC9] px-4 py-2 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-2 transition-all active:scale-95"
           >
-            <span>{selectedFilter}</span>
+            <span>{selectedFilter === 'All Courses' ? t('allCourses') : translateSubject(selectedFilter)}</span>
             <ChevronDown size={14} className={cn('text-slate-400 transition-transform', dropdownOpen && 'rotate-180')} />
           </button>
 
