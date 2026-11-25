@@ -246,6 +246,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
     const { language, t } = useI18n()
 
     // State
+    const [isQuizOffline, setIsQuizOffline] = useState(true)
     const [quiz, setQuiz] = useState<QuizData | null>(null)
     const [courseId, setCourseId] = useState<string>(routeCourseId || '')
     const [attempt, setAttempt] = useState<Attempt | null>(null)
@@ -368,11 +369,13 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
         await finalizeAttempt(attempt.clientAttemptId)
         setAttempt((prev) => prev ? { ...prev, status: 'QUEUED' } : prev)
 
-        // Trigger immediate background sync
-        try {
-          await processOutbox(true)
-        } catch (err) {
-          console.warn('[Quiz] Initial sync notice:', err)
+        // Trigger immediate background sync only if online and not in offline quiz mode
+        if (!isQuizOffline && isOnline) {
+          try {
+            await processOutbox(true)
+          } catch (err) {
+            console.warn('[Quiz] Initial sync notice:', err)
+          }
         }
 
         setShowComplete(true)
@@ -454,7 +457,7 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
             answeredCount={answeredCount}
             totalCount={totalQ}
             receipt={liveReceipt}
-            isOnline={isOnline}
+            isOnline={!isQuizOffline && isOnline}
             t={t}
             onRetake={handleRetake}
             onNavigateCourse={() => navigate(`/courses/${courseId}`)}
@@ -478,13 +481,20 @@ type SaveStatus = 'idle' | 'saving' | 'saved' | 'error'
           </div>
 
           {/* Offline / Online badge */}
-          <div className={cn(
-            'flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-xl',
-            isOnline ? 'bg-success/10 text-success-dark' : 'bg-warning/10 text-warning-dark'
-          )}>
-            {isOnline ? <Wifi size={11} /> : <WifiOff size={11} />}
-            {isOnline ? t('online') : t('offlineMode')}
-          </div>
+          <button
+            type="button"
+            onClick={() => setIsQuizOffline(!isQuizOffline)}
+            title="Toggle offline / online mode"
+            className={cn(
+              'flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-xl transition-all shadow-xs cursor-pointer',
+              isQuizOffline
+                ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+            )}
+          >
+            {isQuizOffline ? <WifiOff size={11} strokeWidth={2.2} /> : <Wifi size={11} strokeWidth={2.2} />}
+            <span>{isQuizOffline ? t('offline') : t('online')}</span>
+          </button>
 
           {/* Timer */}
           <div className="flex items-center gap-1 text-xs text-slate-500 font-mono bg-slate-50 px-2.5 py-1 rounded-xl">
