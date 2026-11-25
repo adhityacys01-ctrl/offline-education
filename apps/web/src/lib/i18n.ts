@@ -8,11 +8,11 @@ export const LANGUAGE_LABELS: Record<SupportedLanguage, string> = {
   mr: 'मराठी',
 }
 
-export const LANG_STORAGE_KEY = 'learnhub_preferred_lang'
+export const LANG_STORAGE_KEY = 'synkshara_preferred_lang'
 
 function getInitialLanguage(): SupportedLanguage {
   if (typeof window !== 'undefined') {
-    const saved = localStorage.getItem(LANG_STORAGE_KEY) as SupportedLanguage | null
+    const saved = (localStorage.getItem(LANG_STORAGE_KEY) || localStorage.getItem('learnhub_preferred_lang')) as SupportedLanguage | null
     if (saved === 'en' || saved === 'hi' || saved === 'mr') return saved
   }
   return 'en'
@@ -28,6 +28,8 @@ export const useLanguageStore = create<LanguageStoreState>((set) => ({
   setLanguage: (lang: SupportedLanguage) => {
     if (typeof window !== 'undefined') {
       localStorage.setItem(LANG_STORAGE_KEY, lang)
+      localStorage.setItem('learnhub_preferred_lang', lang)
+      window.dispatchEvent(new CustomEvent('synkshara_lang_change', { detail: lang }))
       window.dispatchEvent(new CustomEvent('learnhub_lang_change', { detail: lang }))
     }
     set({ language: lang })
@@ -37,7 +39,7 @@ export const useLanguageStore = create<LanguageStoreState>((set) => ({
 export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
   en: {
     // ── App Brand & Header ───────────────────────────────────────────
-    appName: 'LearnHub',
+    appName: 'SYNKSHARA',
     searchPlaceholder: 'Search courses, topics...',
     goOffline: 'Go Offline',
     goOnline: 'Go Online',
@@ -216,7 +218,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
   hi: {
     // ── App Brand & Header ───────────────────────────────────────────
-    appName: 'लर्नहब',
+    appName: 'SYNKSHARA',
     searchPlaceholder: 'कोर्स, विषय खोजें...',
     goOffline: 'ऑफलाइन जाएं',
     goOnline: 'ऑनलाइन जाएं',
@@ -395,7 +397,7 @@ export const TRANSLATIONS: Record<SupportedLanguage, Record<string, string>> = {
 
   mr: {
     // ── App Brand & Header ───────────────────────────────────────────
-    appName: 'लर्नहब',
+    appName: 'SYNKSHARA',
     searchPlaceholder: 'अभ्यासक्रम, विषय शोधा...',
     goOffline: 'ऑफलाइन जा',
     goOnline: 'ऑनलाइन जा',

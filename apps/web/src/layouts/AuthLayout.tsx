@@ -12,11 +12,11 @@ export function AuthLayout() {
               <div className="w-9 h-9 bg-white rounded-xl border border-[#CBE4F6] flex items-center justify-center text-[#1B7FC9] shadow-xs">
                 <GraduationCap size={18} strokeWidth={2.2} />
               </div>
-              <h2 className="text-base font-bold text-slate-900 tracking-tight">Offline Learning</h2>
+              <h2 className="text-base font-bold text-slate-900 tracking-tight">SYNKSHARA</h2>
             </div>
 
             <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900 mb-8">
-              Offline Learning<br />Without Limits
+              SYNKSHARA<br />Without Limits
             </h1>
 
             <div className="space-y-3.5">
@@ -44,7 +44,7 @@ export function AuthLayout() {
               <div className="w-8 h-8 rounded-lg bg-[#E1F0FA] text-[#1B7FC9] border border-[#CBE4F6] flex items-center justify-center">
                 <GraduationCap size={16} />
               </div>
-              <span className="font-bold text-slate-900 text-sm">Offline Learning</span>
+              <span className="font-bold text-slate-900 text-sm">SYNKSHARA</span>
             </div>
             <Outlet />
           </div>
